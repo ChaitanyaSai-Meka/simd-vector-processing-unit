@@ -193,18 +193,18 @@ The FSM design is specified in \texttt{docs/control\_fsm.md}.
 \section{Individual Contributions}
 
 \begin{table}[htbp]
-\caption{Team Contributions (fill from \texttt{git log --author} before submission)}
+\caption{Team Contributions}
 \label{tab:contributions}
 \centering
 \begin{tabular}{lp{5.5cm}}
 \toprule
 Team Member & Contribution \\
 \midrule
-Kasula Lalithendra  & \\
-Dhanvin Vadlamudi   & \\
-Jagruthi Pulumati   & \\
-Rakshita            & \\
-Chaitanya Sai Meka  & \\
+Kasula Lalithendra  & Architecture lead; interface contract (\texttt{interfaces.md}), demo top datapath (\texttt{vpu\_demo\_top.v}), automated build flow (\texttt{Makefile}), and repository documentation. \\
+Dhanvin Vadlamudi   & Datapath RTL lead; designed and implemented 32-bit \texttt{lane\_alu}, parameterized \texttt{lane\_array}, \texttt{lane\_mux}, \texttt{vreg\_file}, \texttt{sreg\_file}, and \texttt{result\_combiner}. \\
+Jagruthi Pulumati   & Control and memory RTL; authored ISA specification (\texttt{isa.md}), Moore control FSM design (\texttt{control\_fsm.md}), wide-port \texttt{dmem.v}, and \texttt{pc\_imem.v} with unit testbenches. \\
+Rakshita            & Verification lead; developed Python golden reference model (\texttt{golden.py}), unit testbenches for all ALU ops, edge cases, register file invariants, and lane independence across LANES\,$\in\{1,4,8\}$. \\
+Chaitanya Sai Meka  & Report and synthesis lead; authored IEEE conference report, video presentation script, and non-project-mode Vivado synthesis scripts (\texttt{run\_synth.tcl}) for Artix-7. \\
 \bottomrule
 \end{tabular}
 \end{table}
