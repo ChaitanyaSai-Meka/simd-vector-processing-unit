@@ -49,6 +49,21 @@ module sreg_file_tb;
         end
     endtask
 
+    task chk_reg;
+        input integer    reg_num;
+        input [DW-1:0]   got;
+        input [DW-1:0]   exp;
+        begin
+            if (got === exp) begin
+                $display("  PASS r%0d read back", reg_num);
+                pass_count = pass_count + 1;
+            end else begin
+                $display("  FAIL r%0d read back: expected=%h actual=%h", reg_num, exp, got);
+                fail_count = fail_count + 1;
+            end
+        end
+    endtask
+
     task write_reg;
         input [2:0]   addr;
         input [DW-1:0] data;
@@ -77,7 +92,7 @@ module sreg_file_tb;
             write_reg(i[2:0], i * 32'h11111111);
         for (i = 1; i < 8; i = i + 1) begin
             raddr1 = i[2:0]; #1;
-            chk(rdata1, i * 32'h11111111, $sformatf("r%0d read back", i));
+            chk_reg(i, rdata1, i * 32'h11111111);
         end
 
         // ---- T3: r0 stays 0 even after write attempt ----

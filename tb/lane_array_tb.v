@@ -89,14 +89,18 @@ module lane_array_tb;
         $display("-- T3: VSLT (lane 0: -1<1=1, lane 1: 1<-1=0, rest basic) --");
         vs1[0*DW +: DW] = 32'hFFFFFFFF;  // -1
         vs2[0*DW +: DW] = 32'h00000001;  // 1
-        for (i = 1; i < LANES; i = i + 1) begin
+        if (LANES > 1) begin
+            vs1[1*DW +: DW] = 32'h00000001;  // 1
+            vs2[1*DW +: DW] = 32'hFFFFFFFF;  // -1
+        end
+        for (i = 2; i < LANES; i = i + 1) begin
             vs1[i*DW +: DW] = i;
-            vs2[i*DW +: DW] = LANES - i;
+            vs2[i*DW +: DW] = i;
         end
         alu_op = 4'h5; #1;
         chk_lane(0, result[0*DW +: DW], 32'h00000001, "VSLT -1<1");
         if (LANES > 1)
-            chk_lane(1, result[1*DW +: DW], 32'h00000000, "VSLT 1<(LANES-1)");
+            chk_lane(1, result[1*DW +: DW], 32'h00000000, "VSLT 1<-1");
 
         // ---- T4: Scalar broadcast (opb_sel=1) ----
         $display("-- T4: VADD.S scalar broadcast (opb_sel=1) --");

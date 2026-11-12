@@ -51,6 +51,21 @@ module vreg_file_tb;
         end
     endtask
 
+    task chk_reg;
+        input integer    reg_num;
+        input [W-1:0]    got;
+        input [W-1:0]    exp;
+        begin
+            if (got === exp) begin
+                $display("  PASS v%0d read port1", reg_num);
+                pass_count = pass_count + 1;
+            end else begin
+                $display("  FAIL v%0d read port1\n    exp=%h\n    got=%h", reg_num, exp, got);
+                fail_count = fail_count + 1;
+            end
+        end
+    endtask
+
     // Write a register (synchronous)
     task write_reg;
         input [2:0]  addr;
@@ -79,7 +94,7 @@ module vreg_file_tb;
         for (i = 0; i < 8; i = i + 1) begin
             raddr1 = i[2:0]; #1;
             pat = {4{i[7:0], 8'hAB, 8'hCD, 8'hEF}};
-            chk(rdata1, pat, $sformatf("v%0d read port1", i));
+            chk_reg(i, rdata1, pat);
         end
 
         // ---- T2: Both ports read independently ----
