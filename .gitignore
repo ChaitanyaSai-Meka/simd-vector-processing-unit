@@ -1,0 +1,41 @@
+# Simulation outputs
+*.vcd
+*.vvp
+*.lxt
+*.fst
+
+# Vivado project and output files
+*.xpr
+*.xsa
+*.bit
+*.ltx
+*.mcs
+*.bin
+*.log
+*.jou
+.Xil/
+vivado.jou
+vivado.log
+vivado_pid*.str
+NA/
+
+# Vivado generated directories
+synth/reports/lanes*/
+synth/.Xil/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# macOS
+.DS_Store
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
