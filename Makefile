@@ -7,9 +7,9 @@
 #   make clean  – remove compiled artefacts
 
 IVERILOG  = iverilog
-VVP       = vvp
-GTKWAVE   = gtkwave
-PYTHON    = python3
+VVP       ?= vvp
+GTKWAVE   ?= $(shell which gtkwave 2>/dev/null || which surfer 2>/dev/null || echo open)
+PYTHON    ?= python3
 
 LANES     ?= 4
 DW        = 32
