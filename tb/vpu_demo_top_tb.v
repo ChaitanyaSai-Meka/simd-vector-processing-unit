@@ -109,6 +109,8 @@ module vpu_demo_top_tb;
     reg [W-1:0] vec_a, vec_b, expected;
 
     initial begin
+        $dumpfile("docs/vpu_demo_vadd_L4.vcd");
+        $dumpvars(0, vpu_demo_top_tb);
         $display("=== vpu_demo_top_tb LANES=%0d ===", LANES);
         rst = 0; vs1_addr = 0; vs2_addr = 0; rs2_addr = 0;
         alu_op = 0; opb_sel = 0; vd_addr = 0; vreg_we = 0;
@@ -198,10 +200,6 @@ module vpu_demo_top_tb;
         else
             $display("FAIL  vpu_demo_top_tb LANES=%0d: %0d passed, %0d FAILED",
                      LANES, pass_count, fail_count);
-
-        // VCD for waveform (GTKWave)
-        $dumpfile("docs/vpu_demo_vadd_L4.vcd");
-        $dumpvars(0, vpu_demo_top_tb);
 
         $finish;
     end
