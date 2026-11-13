@@ -7,307 +7,424 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{booktabs}
-\usepackage{listings}
 \usepackage{url}
-\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,calc}
+\usepackage[hidelinks]{hyperref}
 
-\lstset{
-  basicstyle=\ttfamily\footnotesize,
-  breaklines=true,
-  frame=single
+\graphicspath{{../docs/}}
+
+\makeatletter
+\newcommand{\linebreakand}{%
+  \end{@IEEEauthorhalign}
+  \hfill\mbox{}\par
+  \mbox{}\hfill\begin{@IEEEauthorhalign}
 }
+\makeatother
 
 \begin{document}
 
-\title{SIMD Vector Processing Unit: Design, Verification, and FPGA Synthesis}
+\title{SIMD Vector Processing Unit: Design and Verification of a Parameterized Multi-Lane Datapath in Verilog\\
+{\large Phase~I Report --- Team LANE BREAKERS}}
 
 \author{
-  \IEEEauthorblockN{Kasula Lalithendra}
-  \IEEEauthorblockA{\textit{B.Tech CS\&AI, Rishihood University / NST}\\
-  kasula.lalithendra2024@nst.rishihood.edu.in}
-  \and
   \IEEEauthorblockN{Dhanvin Vadlamudi}
-  \IEEEauthorblockA{\textit{B.Tech CS\&AI, Rishihood University / NST}\\
-  dhanvin.vadlamudi269@gmail.com}
-  \and
-  \IEEEauthorblockN{Jagruthi Pulumati}
-  \IEEEauthorblockA{\textit{B.Tech CS\&AI, Rishihood University / NST}\\
-  jagruthip2007@gmail.com}
-  \and
-  \IEEEauthorblockN{Rakshita}
-  \IEEEauthorblockA{\textit{B.Tech CS\&AI, Rishihood University / NST}\\
-  polanarakshita28@gmail.com}
+  \IEEEauthorblockA{\textit{NST, Rishihood University}\\
+  Enrolment No.\ 2401010150\\
+  {\footnotesize dhanvin.vadlamudi2024@nst.rishihood.edu.in}}
   \and
   \IEEEauthorblockN{Chaitanya Sai Meka}
-  \IEEEauthorblockA{\textit{B.Tech CS\&AI, Rishihood University / NST}\\
-  chaitanya.s.meka@gmail.com}
+  \IEEEauthorblockA{\textit{NST, Rishihood University}\\
+  Enrolment No.\ 2401010275\\
+  {\footnotesize meka.sai2024@nst.rishihood.edu.in}}
+  \and
+  \IEEEauthorblockN{Jagruthi Pulumati}
+  \IEEEauthorblockA{\textit{NST, Rishihood University}\\
+  Enrolment No.\ 2401010196\\
+  {\footnotesize jagruthi.pulumati2024@nst.rishihood.edu.in}}
+  \linebreakand
+  \IEEEauthorblockN{Kasula Lalithendra}
+  \IEEEauthorblockA{\textit{NST, Rishihood University}\\
+  Enrolment No.\ 2401010216\\
+  {\footnotesize kasula.lalithendra2024@nst.rishihood.edu.in}}
+  \and
+  \IEEEauthorblockN{Polana Rakshita}
+  \IEEEauthorblockA{\textit{NST, Rishihood University}\\
+  Enrolment No.\ 2401020044\\
+  {\footnotesize polana.rakshita2024@nst.rishihood.edu.in}}
 }
 
 \maketitle
 
 % ─────────────────────────────────────────────────────────────────────────────
 \begin{abstract}
-This paper presents the design, implementation, verification, and FPGA synthesis
-of a parameterized SIMD (Single Instruction, Multiple Data) Vector Processing
-Unit (VPU) in Verilog-2001. The VPU executes one instruction simultaneously
-across \texttt{LANES} parallel 32-bit data lanes (default: 4~lanes), supporting
-nine ALU operations (ADD, SUB, AND, OR, XOR, SLT, EQ, SLL, SRL), vector
-load/store, scalar-broadcast addressing, and a minimal scalar control interface.
-A non-pipelined Harvard-architecture FSM controls instruction fetch, decode/execute,
-and write-back in deterministic cycle counts. We verify the RTL against a Python
-golden model using self-checking testbenches for every module, and synthesize
-the design for Artix-7 (\texttt{xc7a35tcpg236-1}) at lane counts 1, 2, 4, and~8.
-Measured results include cycle count, throughput, LUT/FF/DSP resource usage,
-and maximum operating frequency. The 4-lane configuration achieves approximately
-$4\times$ throughput improvement over the scalar (LANES\,=\,1) baseline on pure
-data-parallel benchmarks, with sub-linear scaling losses attributable to loop
-overhead and scalar control instructions.
-% TODO: fill in actual Fmax and resource numbers from synth/reports/ before submission
+Single Instruction, Multiple Data (SIMD) execution is one of the most area- and
+energy-efficient ways to exploit data-level parallelism, and it underpins
+everything from classic vector supercomputers to today's CPU vector extensions
+and GPU shader cores. This report presents the Phase~I design and verification
+of a parameterized SIMD Vector Processing Unit (VPU) written in synthesizable
+Verilog-2001. A single \texttt{LANES} parameter ($1, 2, 4,$ or $8$) replicates a
+32-bit lane datapath, so one instruction updates every lane in the same clock
+cycle. The VPU supports nine lane-wise ALU operations (add, subtract, AND, OR,
+XOR, signed less-than, equality, and logical shifts), a scalar-broadcast operand
+mode, an 8-entry vector register file, an 8-entry scalar register file, and
+wide-port Harvard instruction and data memories. In Phase~I we implemented all
+datapath and memory modules, integrated them into a demonstration top level, and
+verified them with self-checking Icarus Verilog testbenches, alongside a Python
+golden reference model. All 10 testbench runs (201 individual checks, including lane-count
+sweeps at 1, 4, and 8 lanes) pass, and simulation waveforms confirm that all four
+lanes of a vector add are written back in a single cycle. Phase~II will add the
+instruction-sequencing control unit, run benchmark programs to measure speedup
+over a scalar baseline, and synthesize the design for a Xilinx Artix-7 FPGA.
 \end{abstract}
 
 \begin{IEEEkeywords}
-SIMD, vector processor, FPGA, Verilog, data-level parallelism, hardware design
+SIMD, vector processor, data-level parallelism, Verilog, FPGA, hardware verification
 \end{IEEEkeywords}
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Introduction and Objectives}
+\section{Introduction}
 
-Modern workloads in signal processing, machine learning, and scientific computing
-exhibit abundant \emph{data-level parallelism} (DLP): the same operation is applied
-independently to large arrays of elements. SIMD architectures exploit DLP by
-issuing a single instruction that operates on multiple data elements in parallel,
-amortising the fetch-decode overhead across all lanes~\cite{flynn1972some}.
+Many important workloads---image and signal processing, machine-learning
+inference, and scientific simulation---apply the \emph{same} operation to long
+arrays of independent elements. This property, called \emph{data-level
+parallelism} (DLP), can be exploited by a SIMD machine: the processor fetches and
+decodes one instruction and applies it to many data elements at once, amortizing
+the control overhead across all lanes~\cite{flynn1966very,hennessy2017computer}.
 
-This project designs and evaluates a small, synthesizable SIMD VPU as a learning
-vehicle for key concepts in computer architecture: register files, ALU design,
-parameterized RTL, Harvard memory, FSM-based control, and FPGA synthesis. The
-primary objectives are:
+The aim of this project is to build such a machine from first principles at a
+scale small enough to understand completely: a parameterized SIMD VPU whose lane
+count can be changed without editing the RTL. The project lets us study, in real
+hardware description code, the main building blocks of a processor---register
+files, ALUs, operand multiplexing, Harvard memories, and FSM control---and the
+classic area-versus-performance trade-off of widening a datapath.
 
+\subsection{Objectives}
 \begin{enumerate}
-  \item Implement a parameterized VPU in synthesizable Verilog-2001 that supports
-        LANES\,$\in\{1, 2, 4, 8\}$.
-  \item Verify all modules against a Python golden reference model using
-        self-checking testbenches.
-  \item Measure the cycle-count speedup of LANES\,=\,4 and LANES\,=\,8 over the
-        scalar baseline (LANES\,=\,1) on three benchmarks.
-  \item Synthesize for Artix-7 and report resource utilization and maximum
-        frequency at all four lane counts.
+  \item Implement a parameterized VPU in synthesizable Verilog-2001 supporting
+        \texttt{LANES}\,$\in\{1,2,4,8\}$ from a single source.
+  \item Verify every module with self-checking testbenches and build a
+        Python golden reference model. \emph{(Phase~I --- complete.)}
+  \item Add a control unit that executes stored programs, and measure cycle-count
+        speedup over the scalar (\texttt{LANES}\,=\,1) baseline. \emph{(Phase~II.)}
+  \item Synthesize the design for Artix-7 and report resource use and maximum
+        clock frequency per lane count. \emph{(Phase~II.)}
 \end{enumerate}
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Literature Review}
 
-\subsection{Flynn's Taxonomy and SIMD}
+\subsection{Flynn's Taxonomy}
+Flynn classified computer organizations by the number of concurrent instruction
+and data streams~\cite{flynn1966very}, and later analysed the effectiveness of
+each class~\cite{flynn1972some}. In the SIMD class a single control unit
+broadcasts each instruction to many processing elements, each operating on its
+own data. Our VPU is a direct, minimal realization of this model: one shared
+\texttt{alu\_op} drives all lane ALUs.
 
-Flynn classified computer architectures by the multiplicity of instruction and
-data streams~\cite{flynn1966very}. The SIMD class — Single Instruction, Multiple
-Data — is the foundation of modern vector and SIMD hardware, from early array
-processors to contemporary CPU extensions (SSE, AVX, NEON) and GPU shader cores.
-Flynn later formalized the relationship between instruction throughput and
-parallelism in~\cite{flynn1972some}.
+\subsection{Vector Supercomputers}
+The Cray-1~\cite{russell1978cray} popularized the \emph{vector register}
+architecture: vectors are loaded into large registers, operated on by pipelined
+functional units, and written back to memory. Hennessy and
+Patterson~\cite{hennessy2017computer} describe how modern vector machines
+improve throughput by splitting each functional unit into multiple parallel
+\emph{lanes}, and Asanovi\'c~\cite{asanovic1998vector} showed that such
+lane-parallel vector designs remain effective in single-chip microprocessors.
+Our design adopts the vector-register and multi-lane organization, but
+processes a whole vector register in one cycle rather than streaming elements
+through a pipeline.
 
-\subsection{Data-Level Parallelism and Amdahl's Law}
+\subsection{Packed SIMD Extensions and RISC-V Vectors}
+General-purpose processors added short ``packed'' SIMD units, beginning with
+Intel MMX~\cite{peleg1996mmx}, which treat a wide register as several narrower
+elements. Kozyrakis and Patterson~\cite{kozyrakis2003scalable} argued that true
+vector architectures scale better than fixed-width packed SIMD because software
+does not need to change when the hardware width changes. The RISC-V ``V''
+extension~\cite{riscv2021vector} follows this vector-length-agnostic approach.
+Our \texttt{LANES} parameter mirrors the same idea at the hardware level: the
+same RTL and instruction set work at any lane count.
 
-Amdahl~\cite{amdahl1967validity} showed that the speedup of a parallel machine
-is bounded by the fraction of the workload that is parallelizable. For a pure
-vector workload (Amdahl fraction $f \to 1$) with $L$ lanes, the ideal speedup
-approaches $L$. In practice, loop overhead (scalar address arithmetic, branch,
-HALT) and memory bandwidth limit the achieved speedup. We measure this effect
-directly in Section~VI.
+\subsection{Soft Vector Processors on FPGAs}
+Several groups have built vector processors as soft cores on FPGAs.
+VIPERS~\cite{yu2008vipers} showed that a soft vector co-processor with a
+configurable number of lanes can deliver large speedups over a scalar soft CPU.
+VESPA~\cite{yiannacouras2008vespa} studied how performance and area scale as
+lanes are added, and VEGAS~\cite{chou2011vegas} replaced the vector register
+file with a scratchpad to reduce memory overhead. These works motivate our
+Phase~II plan to synthesize the VPU at several lane counts and compare the
+LUT and flip-flop cost per lane against the cycle-count speedup.
 
-\subsection{Vector Processor Architecture}
-
-Hennessy and Patterson~\cite{hennessy2017computer} provide the standard reference
-for vector processor design: vector register files, lane-parallel functional
-units, vector load/store units, and stride-based addressing. Our design follows
-the same principles at a small scale suitable for an FPGA prototype.
-
-\subsection{FPGA Soft SIMD}
-
-Reconfigurable devices allow SIMD datapaths to be implemented as soft processors.
-% TODO: add one or two survey papers on FPGA soft processors or vector accelerators
-% if available; mark with \% VERIFY in refs.bib
+\subsection{Speedup Limits}
+Amdahl's law~\cite{amdahl1967validity} bounds the achievable speedup by the
+fraction of work that cannot be parallelized. With $L$ lanes, a purely
+data-parallel loop approaches an $L\times$ speedup, but scalar instructions for
+address arithmetic, loop counters, and branches do not shrink with $L$. We
+therefore expect \emph{sub-linear} speedup in Phase~II, and our benchmark plan
+is designed to quantify this gap.
 
 % ─────────────────────────────────────────────────────────────────────────────
-\section{Proposed Solution / Architecture}
+\section{Proposed Solution}
 
-\subsection{Top-Level Architecture}
+\subsection{Architecture Overview}
+The VPU is a non-pipelined, single-issue Harvard machine with separate
+instruction and data memories. Its datapath is shown in
+Fig.~\ref{fig:block}. Vector registers are stored as a single flat bus of
+$\texttt{LANES}\times32$ bits, with lane $i$ occupying bits
+\texttt{[i*32 +: 32]}. Every lane receives the same opcode, so a single
+instruction performs \texttt{LANES} operations in parallel.
 
-The VPU follows a Harvard architecture (separate instruction and data memories)
-with a non-pipelined, single-issue FSM. Figure~\ref{fig:block} shows the
-Phase~I demo datapath.
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize,
+  >={Stealth[length=1.6mm]},
+  blk/.style={draw, thick, rounded corners=1pt, align=center, minimum height=7mm, fill=blue!6},
+  lane/.style={draw, align=center, minimum width=9mm, minimum height=4.5mm, fill=orange!12},
+  mux/.style={draw, align=center, minimum width=9mm, minimum height=4.5mm, fill=green!10},
+  lbl/.style={font=\tiny, align=center}
+]
+  % register files
+  \node[blk, minimum width=16mm, minimum height=17mm] (vrf) at (0,0)
+        {\texttt{vreg\_file}\\8 $\times$ (L$\times$32)\\2R / 1W};
+  \node[blk, minimum width=16mm] (srf) at (0,-1.8)
+        {\texttt{sreg\_file}\\8 $\times$ 32\\r0\,=\,0};
 
-\begin{figure}[htbp]
-  \centering
-  % TODO: replace with actual exported PNG from docs/block_diagram.md
-  \fbox{\rule{0pt}{4cm}\rule{0.9\columnwidth}{0pt}}
-  \caption{SIMD VPU demo datapath block diagram (LANES\,=\,4). Signals flow from
-  \texttt{vreg\_file} and \texttt{sreg\_file} through \texttt{lane\_array}
-  (which replicates \texttt{lane\_mux} and \texttt{lane\_alu} for each lane)
-  to \texttt{result\_combiner} and back to \texttt{vreg\_file}.}
-  \label{fig:block}
+  % lanes
+  \foreach \i/\y in {0/1.05, 1/0.35, 2/-0.35, 3/-1.05} {
+    \node[mux] (m\i) at (2.2,\y) {mux \i};
+    \node[lane] (a\i) at (3.35,\y) {ALU \i};
+    \draw[->] (m\i) -- (a\i);
+  }
+  \node[draw, dashed, thick, inner sep=3pt, fit=(m0)(a3)] (la) {};
+  \node[font=\scriptsize, above=0pt of la] {\texttt{lane\_array} (\texttt{LANES} copies)};
+
+  \node[blk, minimum width=13mm] (rc) at (5.2,0) {\texttt{result\_}\\\texttt{combiner}};
+
+  % memories
+  \node[blk, minimum width=13mm] (dmem) at (5.2,-1.8)
+        {\texttt{dmem}\\256 $\times$\\(L$\times$32)};
+  \node[blk, minimum width=16mm] (imem) at (0,-3.3)
+        {\texttt{pc\_imem}\\PC + ROM};
+  \node[blk, dashed, fill=gray!10, minimum width=28mm] (cu) at (3.4,-3.3)
+        {\texttt{control\_unit} (Phase~II)\\FETCH $\to$ EXEC $\to$ WB};
+
+  % data paths
+  \draw[->, thick] (vrf.east |- m0.west) -- node[lbl, above]{vs1} (la.west |- m0.west);
+  \draw[->, thick] (vrf.east |- m2.west) -- node[lbl, above]{vs2} (la.west |- m2.west);
+  \draw[->] (srf.east) -- node[lbl, above]{scalar} (srf.east -| 1.5,0) |- (la.west |- m3.west);
+  \draw[->, thick] (la.east |- rc.west) -- (rc.west);
+  \draw[->, dashed] (dmem.north) -- node[lbl, right]{load} (rc.south);
+  \draw[->, thick] (rc.north) |- (2.75,2.05) -- node[lbl, above]{write-back to vd} (0,2.05) -- (vrf.north);
+  \draw[->, dashed] (imem.east) -- node[lbl, above]{instr} (cu.west);
+  \draw[->, dashed] (cu.north) -- node[lbl, left, pos=0.5]{ctrl} (cu.north |- la.south);
+  \draw[->, dashed] (cu.east) -| (dmem.south);
+\end{tikzpicture}
+\caption{VPU datapath (shown for \texttt{LANES}\,=\,4). Each lane has its own
+operand-B multiplexer and ALU; all lanes share one opcode. Dashed blocks and
+paths are Phase~II: the control unit is designed but not yet implemented, and
+\texttt{dmem} and \texttt{pc\_imem} are implemented and unit-tested but not yet
+connected. In Phase~I the control signals are driven by the testbench through
+\texttt{vpu\_demo\_top}.}
+\label{fig:block}
 \end{figure}
 
-\subsection{Module Hierarchy}
+\subsection{Module Design}
+Table~\ref{tab:modules} lists the RTL modules. All are parameterized by
+\texttt{LANES} and data width \texttt{DW}\,=\,32.
 
-Table~\ref{tab:modules} summarises the RTL modules. Full port lists and bus
-conventions are in \texttt{docs/interfaces.md}.
-
-\begin{table}[htbp]
-\caption{RTL Module Summary}
+\begin{table}[!t]
+\caption{RTL Module Summary (Phase~I)}
 \label{tab:modules}
 \centering
-\begin{tabular}{lp{5cm}}
+\begin{tabular}{@{}lp{5.1cm}@{}}
 \toprule
-Module & Responsibility \\
+Module & Function \\
 \midrule
-\texttt{lane\_alu}      & 32-bit single-lane ALU (9 ops, combinational) \\
-\texttt{lane\_mux}      & Operand-B select: vector lane or scalar broadcast \\
-\texttt{lane\_array}    & \texttt{LANES} copies via \texttt{generate} loop \\
-\texttt{vreg\_file}     & 8 vector registers, async read, sync write \\
-\texttt{sreg\_file}     & 8 scalar registers, \texttt{r0}$\equiv$0 \\
-\texttt{result\_combiner} & ALU/load write-back mux \\
-\texttt{dmem}           & Wide-port data memory (\texttt{LANES}$\times$32\,b) \\
-\texttt{pc\_imem}       & Program counter and instruction memory \\
-\texttt{vpu\_demo\_top} & Phase~I demo top (Phase~II adds \texttt{control\_unit}) \\
+\texttt{lane\_alu}        & Combinational 32-bit ALU, 9 operations selected by a 4-bit \texttt{alu\_op} \\
+\texttt{lane\_mux}        & Selects operand B: the lane's own \texttt{vs2} element, or a broadcast scalar \\
+\texttt{lane\_array}      & \texttt{generate} loop creating \texttt{LANES} mux+ALU pairs \\
+\texttt{vreg\_file}       & 8 vector registers, 2 async read ports, 1 sync write port \\
+\texttt{sreg\_file}       & 8 scalar registers, \texttt{r0} hard-wired to zero \\
+\texttt{result\_combiner} & Write-back mux: ALU result or memory load data \\
+\texttt{dmem}             & Data memory, one \texttt{LANES}$\times$32-bit word per address \\
+\texttt{pc\_imem}         & Program counter with branch support, 256-word instruction ROM \\
+\texttt{vpu\_demo\_top}   & Phase~I integration of the full datapath \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+\textbf{Lane ALU.} The ALU implements \texttt{VADD}, \texttt{VSUB}
+(32-bit wrap-around), \texttt{VAND}, \texttt{VOR}, \texttt{VXOR},
+\texttt{VSLT} (signed compare, result 0 or 1), \texttt{VEQ}, and logical
+shifts \texttt{VSLL}/\texttt{VSRL} using the low 5 bits of operand B. It is
+purely combinational, so the result is ready in the same cycle as its inputs.
+
+\textbf{Scalar broadcast.} When \texttt{opb\_sel}\,=\,1, every lane's
+multiplexer selects the same scalar register value, giving instructions such as
+\texttt{VADD.S vd, vs1, rs2} that compute $vd[i] = vs1[i] + rs2$. This avoids
+having to fill a whole vector register with a repeated constant.
+
+\textbf{Register files.} Both register files use asynchronous read and
+synchronous write, so an instruction can read its operands, compute, and write
+its result on the next clock edge. Scalar register \texttt{r0} always reads as
+zero (as in RISC-V); vector register \texttt{v0} is a normal register.
+
+\textbf{Memories.} \texttt{dmem} is addressed in lane-groups: address $A$ holds
+\texttt{LANES} consecutive 32-bit elements, so a vector load or store moves a
+whole register in one access. \texttt{pc\_imem} holds the program and updates
+the PC by $+1$ or to a branch target.
+
 \subsection{Instruction Set}
+Instructions are 32 bits wide: \texttt{opcode[31:26]}, \texttt{vd[25:23]},
+\texttt{vs1[22:20]}, \texttt{vs2[19:17]}, \texttt{opb\_sel[16]}, and a 16-bit
+signed immediate. The ISA contains the nine vector ALU operations, vector
+load/store (\texttt{VLD}, \texttt{VST}), scalar \texttt{SADDI} and
+\texttt{SLI} for loop counters and addresses, \texttt{BNE} for loops, and
+\texttt{HALT}. The full encoding is in \texttt{docs/isa.md}.
 
-The VPU uses 32-bit fixed-width instructions. The instruction encoding
-(opcode[31:26], destination[25:23], src1[22:20], src2[19:17],
-opb\_sel[16], imm[15:0]) is documented in \texttt{docs/isa.md}.
-Supported operations: VADD, VSUB, VAND, VOR, VXOR, VSLT, VEQ, VSLL,
-VSRL, VLD, VST, SADDI, SLI, BNE, HALT.
+\subsection{Control Unit Design}
+The control unit (to be implemented in Phase~II) is a three-state Moore FSM:
+FETCH $\to$ DECODE/EXECUTE $\to$ WRITEBACK. Vector ALU operations and
+\texttt{VLD} take three cycles; \texttt{VST}, \texttt{BNE}, and \texttt{HALT}
+take two. The state diagram and decode table are in
+\texttt{docs/control\_fsm.md}.
 
-\subsection{Control FSM}
+\subsection{Key Design Decisions}
+\begin{itemize}
+  \item \emph{Single parameter for width:} changing \texttt{LANES} rescales the
+        register file, ALU array, and memory width together, so speedup can be
+        measured on identical RTL.
+  \item \emph{Flat vector buses} (\texttt{[LANES*32-1:0]}) keep the code
+        Verilog-2001 compatible and synthesizable on any tool.
+  \item \emph{Non-pipelined control} keeps the design hazard-free, so cycle
+        counts are exact and easy to reason about; pipelining is future work.
+  \item \emph{Target device:} Xilinx Artix-7 \texttt{xc7a35tcpg236-1}.
+\end{itemize}
 
-The control unit (Phase~II) is a 3-state Moore FSM:
-FETCH $\to$ DECODE/EXECUTE $\to$ WRITEBACK.
-Vector ALU and VLD require 3~cycles; VST, BNE, and HALT require 2~cycles.
-The FSM design is specified in \texttt{docs/control\_fsm.md}.
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Verification and Phase~I Progress}
+
+\subsection{Method}
+Each module has a self-checking testbench that drives inputs, compares outputs
+with expected values written into the testbench, and prints \texttt{PASS} or
+\texttt{FAIL: expected=X actual=Y}. Independently, a Python golden model
+(\texttt{verif/golden.py}) implements the same nine operations with 32-bit
+wrap-around and signed semantics; it has its own self-test and will generate
+the expected outputs for the Phase~II benchmark programs. Test vectors include
+edge cases: 0, 1,
+$-1$, \texttt{0x7FFFFFFF}, \texttt{0x80000000}, overflow wrap-around, and
+shifts by 0 and 31. The \texttt{lane\_array} testbench is compiled at
+\texttt{LANES}\,=\,1, 4, and 8 and includes a \emph{lane-independence} test:
+changing one lane's input must change only that lane's output. A single
+\texttt{make test} command runs the whole suite.
+
+\subsection{Results}
+Table~\ref{tab:tests} shows the output of \texttt{make test} under Icarus
+Verilog. All 201 checks pass.
+
+\begin{table}[!t]
+\caption{Phase~I Testbench Results (Icarus Verilog)}
+\label{tab:tests}
+\centering
+\begin{tabular}{@{}llrc@{}}
+\toprule
+Testbench & Scope & Checks & Result \\
+\midrule
+\texttt{golden.py} & golden-model self-test & -- & PASS \\
+\texttt{lane\_alu\_tb}  & 9 ops + edge cases & 37 & PASS \\
+\texttt{lane\_mux\_tb}  & vector vs.\ scalar select & 9 & PASS \\
+\texttt{lane\_array\_tb} & \texttt{LANES}\,=\,1 & 7 & PASS \\
+\texttt{lane\_array\_tb} & \texttt{LANES}\,=\,4 & 26 & PASS \\
+\texttt{lane\_array\_tb} & \texttt{LANES}\,=\,8 & 50 & PASS \\
+\texttt{vreg\_file\_tb} & all 8 regs, 2 ports & 17 & PASS \\
+\texttt{sreg\_file\_tb} & \texttt{r0}\,=\,0 invariant & 14 & PASS \\
+\texttt{dmem\_tb}       & lane-group read/write & 9 & PASS \\
+\texttt{pc\_imem\_tb}   & reset, increment, branch & 12 & PASS \\
+\texttt{vpu\_demo\_top\_tb} & integrated datapath & 20 & PASS \\
+\midrule
+\multicolumn{2}{@{}l}{\textbf{Total (10 RTL testbench runs)}} & \textbf{201} & \textbf{PASS} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The integrated testbench (\texttt{vpu\_demo\_top\_tb}) loads two vectors into
+\texttt{v0} and \texttt{v1}, then executes \texttt{VADD}, \texttt{VSUB},
+\texttt{VAND}, a scalar-broadcast \texttt{VSLT.S}, and an all-lane overflow
+case. For example, with $v0 = [1, 2, 3, 4]$ and $v1 = [10, 11, 12, 13]$,
+\texttt{VADD v2, v0, v1} produces $v2 = [11, 13, 15, 17]$, and all four lanes
+are written on the same clock edge. Fig.~\ref{fig:wave} shows the simulation
+waveform: the 128-bit \texttt{alu\_result} bus (four lanes) changes in the same
+cycle as \texttt{alu\_op}, and the value is written back when
+\texttt{vreg\_we} is asserted.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth,trim=130 512 0 50,clip]{vadd_4lane_waveform.png}
+\caption{Simulation waveform of \texttt{vpu\_demo\_top} at \texttt{LANES}\,=\,4
+(viewed in Surfer). Each \texttt{alu\_op} value (0\,=\,VADD, 1\,=\,VSUB,
+2\,=\,VAND, 5\,=\,VSLT) produces a full 128-bit, four-lane result in one cycle,
+written back on the \texttt{vreg\_we} pulse.}
+\label{fig:wave}
+\end{figure*}
+
+\subsection{Phase~I Status}
+Completed: all nine RTL modules, the integrated demonstration datapath, the
+golden model, ten self-checking testbench runs, the ISA and control-FSM
+specification, design documentation for every module, a Vivado synthesis
+script, and an automated \texttt{Makefile} flow (\texttt{make test},
+\texttt{make wave}).
+
+\subsection{Plan for Phase~II}
+\begin{enumerate}
+  \item Implement \texttt{control\_unit} and a full \texttt{vpu\_top} that
+        fetches and executes programs from \texttt{pc\_imem}.
+  \item Write benchmark programs (e.g.\ $C[i] = A[i] + B[i]$, scalar-broadcast
+        scaling, and a compare/mask loop) and measure cycle counts at
+        \texttt{LANES}\,=\,1, 2, 4, 8 to compute speedup.
+  \item Run Vivado synthesis on Artix-7 at each lane count and report LUTs,
+        flip-flops, and maximum frequency.
+  \item Analyse where speedup is close to linear and where scalar loop overhead
+        makes it sub-linear, in light of Amdahl's law.
+  \item Stretch goals: \texttt{VMUL} using DSP48 slices, and a cross-lane
+        reduction.
+\end{enumerate}
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Individual Contributions}
+All work is tracked in the team's GitHub repository; each member's commits can
+be seen in the version history.
 
-\begin{table}[htbp]
-\caption{Team Contributions}
-\label{tab:contributions}
-\centering
-\begin{tabular}{lp{5.5cm}}
-\toprule
-Team Member & Contribution \\
-\midrule
-Kasula Lalithendra  & Architecture lead; interface contract (\texttt{interfaces.md}), demo top datapath (\texttt{vpu\_demo\_top.v}), automated build flow (\texttt{Makefile}), and repository documentation. \\
-Dhanvin Vadlamudi   & Datapath RTL lead; designed and implemented 32-bit \texttt{lane\_alu}, parameterized \texttt{lane\_array}, \texttt{lane\_mux}, \texttt{vreg\_file}, \texttt{sreg\_file}, and \texttt{result\_combiner}. \\
-Jagruthi Pulumati   & Control and memory RTL; authored ISA specification (\texttt{isa.md}), Moore control FSM design (\texttt{control\_fsm.md}), wide-port \texttt{dmem.v}, and \texttt{pc\_imem.v} with unit testbenches. \\
-Rakshita            & Verification lead; developed Python golden reference model (\texttt{golden.py}), unit testbenches for all ALU ops, edge cases, register file invariants, and lane independence across LANES\,$\in\{1,4,8\}$. \\
-Chaitanya Sai Meka  & Report and synthesis lead; authored IEEE conference report, video presentation script, and non-project-mode Vivado synthesis scripts (\texttt{run\_synth.tcl}) for Artix-7. \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Verification}
-
-All modules are verified with self-checking testbenches compiled and run under
-Icarus Verilog. The Python golden model (\texttt{verif/golden.py}) computes
-expected outputs for all nine ALU operations across edge-case inputs
-(0, 1, $-1$, \texttt{0x7FFFFFFF}, \texttt{0x80000000}, overflow wraparound,
-shifts by 0 and~31). Testbenches print \texttt{PASS} with a count or
-\texttt{FAIL: expected=X actual=Y} per check.
-
-\texttt{lane\_array\_tb} is compiled three times at LANES\,$\in\{1,4,8\}$
-and includes a lane-independence test that mutates one lane's input and
-confirms only that lane's output changes. All tests pass prior to submission.
-% TODO: paste final 'make test' output here before submission.
-
-A waveform screenshot of a 4-lane VADD showing all four lanes updating in the
-same clock cycle is in \texttt{docs/}.
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Results}
-
-% TODO: fill in after Vivado synthesis and benchmark runs complete
-% Numbers must come from report/results.csv (make bench)
-
-\subsection{Cycle Count and Speedup}
-
-Table~\ref{tab:cycles} shows \texttt{cycle\_count} for benchmark~B1
-(\texttt{C[i] = A[i] + B[i]}, $N = 64$) at each lane count.
-
-\begin{table}[htbp]
-\caption{B1 Benchmark Cycle Count and Speedup ($N=64$)}
-\label{tab:cycles}
-\centering
-\begin{tabular}{rrrr}
-\toprule
-LANES & Cycles & Cycles/Element & Speedup vs.\ LANES\,=\,1 \\
-\midrule
-1 & \textit{TBD} & \textit{TBD} & 1.00$\times$ \\
-2 & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-4 & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-8 & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{FPGA Resource Utilization and Fmax}
-
-Table~\ref{tab:synth} summarises Vivado synthesis results for the
-\texttt{lane\_alu} module on \texttt{xc7a35tcpg236-1}.
-
-\begin{table}[htbp]
-\caption{Synthesis Results — \texttt{lane\_alu} on xc7a35tcpg236-1}
-\label{tab:synth}
-\centering
-\begin{tabular}{rrrrrr}
-\toprule
-LANES & LUTs & FFs & DSPs & BRAMs & Fmax (MHz) \\
-\midrule
-1 & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-2 & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-4 & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-8 & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} & \textit{TBD} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Analysis}
-
-% TODO: write after results are in. Address:
-% - Where speedup is linear (pure VADD on large arrays)
-% - Where it deviates (loop overhead: BNE, SADDI are always 1 element per instruction)
-% - Fmax vs LANES trend
-% - Cost per lane in LUTs
-
-% ─────────────────────────────────────────────────────────────────────────────
-\section{Limitations and Future Work}
-
-The current design is non-pipelined (one instruction every 3~cycles). A
-3-stage pipeline (Fetch, Decode/Execute, Writeback) would improve throughput
-to one instruction per cycle with no data hazards (no register forwarding needed
-for the vector path, since the FSM is single-issue).
-
-The VMUL stretch goal (low 32 bits of product) is not implemented in Phase~I;
-adding it would utilise FPGA DSP48 blocks and allow benchmark~B4.
-
-Cross-lane operations (reductions, shuffles) are not supported in the base design.
-Phase~II scope includes evaluating the cost of a tree-reduce over all lanes.
+\begin{itemize}
+  \item \textbf{Dhanvin Vadlamudi} (Datapath RTL): designed and implemented the
+        32-bit \texttt{lane\_alu}, \texttt{lane\_mux}, the parameterized
+        \texttt{lane\_array}, \texttt{vreg\_file}, \texttt{sreg\_file}, and
+        \texttt{result\_combiner}, with documentation for each module.
+  \item \textbf{Chaitanya Sai Meka} (Report and Synthesis): wrote the IEEE
+        report and literature review, and the Vivado
+        non-project-mode synthesis script for Artix-7.
+  \item \textbf{Jagruthi Pulumati} (Control and Memory): specified the ISA and
+        instruction encoding, designed the control FSM, and implemented
+        \texttt{dmem} and \texttt{pc\_imem} with their testbenches and
+        documentation.
+  \item \textbf{Kasula Lalithendra} (Architecture and Integration): created the
+        repository structure, project specification, interface contracts,
+        block diagram, and design-decision log; integrated all modules in
+        \texttt{vpu\_demo\_top} with its testbench; and built the
+        \texttt{Makefile} test and waveform flow.
+  \item \textbf{Polana Rakshita} (Verification): wrote the Python golden model,
+        the testbenches for the ALU, multiplexer, lane array (1/4/8 lanes), and
+        register files, and the verification plan, and captured the 4-lane
+        waveform.
+\end{itemize}
 
 % ─────────────────────────────────────────────────────────────────────────────
 \section{Conclusion}
-
-We have designed and verified a parameterized SIMD VPU in synthesizable Verilog,
-demonstrating data-level parallelism at LANES\,$\in\{1,2,4,8\}$. The design
-faithfully implements Flynn's SIMD model: a single instruction drives all lanes in
-the same clock cycle. Verification against a Python golden model gives confidence
-in the RTL correctness. Synthesis results quantify the LUT and frequency cost of
-wider datapaths, providing an empirical data point for the classic area-performance
-trade-off in SIMD hardware design.
+Phase~I delivers a complete, verified SIMD datapath: a single Verilog source
+that scales from one to eight 32-bit lanes and executes each vector instruction
+across all lanes in one cycle. Every module passes its self-checking
+testbench, covering edge cases and lane counts of 1, 4, and 8. Phase~II will turn this datapath into a
+programmable processor and measure its speedup and FPGA cost as the number of
+lanes grows.
 
 % ─────────────────────────────────────────────────────────────────────────────
 \bibliographystyle{IEEEtran}

@@ -13,14 +13,14 @@
 | Architecture Lead | Kasula Lalithendra | Repo skeleton, interfaces, demo top, Makefile, README |
 | Datapath RTL | Dhanvin Vadlamudi | lane_alu, lane_mux, lane_array, vreg_file, sreg_file, result_combiner |
 | Control & Memory | Jagruthi Pulumati | ISA doc, control FSM design, dmem, pc_imem |
-| Verification | Rakshita | golden.py, all testbenches, verification strategy |
-| Report & Results | Chaitanya Sai Meka | IEEE report, video script, Vivado synthesis TCL |
+| Verification | Polana Rakshita | golden.py, all testbenches, verification strategy |
+| Report & Results | Chaitanya Sai Meka | IEEE report, Vivado synthesis TCL |
 
 ---
 
 ## What This Project Is
 
-A parameterized **SIMD Vector Processing Unit** in synthesizable Verilog-2001. One instruction operates on all `LANES` data lanes in parallel (default: 4 lanes × 32 bits). The design is verified against a Python golden model and synthesized for an Artix-7 FPGA.
+A parameterized **SIMD Vector Processing Unit** in synthesizable Verilog-2001. One instruction operates on all `LANES` data lanes in parallel (default: 4 lanes × 32 bits). Every module is verified with self-checking testbenches (201 checks, all passing), alongside a Python golden reference model. A Vivado synthesis script for Artix-7 is ready; synthesis results are Phase II work.
 
 Key features:
 - Parameterized lane count: `LANES ∈ {1, 2, 4, 8}` (same RTL, no edits needed)
@@ -67,11 +67,11 @@ simd-vector-processing-unit/
 │   ├── control_fsm.md     FSM state diagram and control decode table
 │   ├── decisions.md       Design decision log
 │   ├── verification.md    Verification strategy and test list
-│   ├── video_script.md    5-minute demo video script
 │   └── <module>.md        One doc file per RTL module
 ├── report/
 │   ├── main.tex           IEEE conference report (IEEEtran)
-│   └── refs.bib           Bibliography (Flynn 1966/1972, H&P, Amdahl)
+│   ├── refs.bib           Bibliography (14 references)
+│   └── SIMD_VPU_Phase1_Report.pdf  Compiled Phase I report
 ├── Makefile
 └── README.md
 ```
@@ -178,7 +178,7 @@ Recording date: Saturday, November 14, 2026
 - [x] Every module has a `docs/<module>.md`
 - [x] Report builds with all required sections (`report/main.tex`)
 - [x] README has project idea, team names, how to run, video link placeholder
-- [ ] Waveform screenshot of 4-lane VADD saved to `docs/` (run `make wave`)
-- [ ] Individual Contributions table filled from `git log`
+- [x] Waveform screenshot of 4-lane VADD saved to `docs/` (run `make wave`)
+- [x] Individual Contributions filled in the report
 - [ ] Video link updated after recording
 
