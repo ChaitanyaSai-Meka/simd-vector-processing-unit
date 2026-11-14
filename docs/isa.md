@@ -92,7 +92,7 @@ BNE   rs1, rs2, label    # branch if not equal (PC-relative)
 HALT                     # stop
 ```
 
-Address offsets in loops increment by `LANES` (lane-groups, not scalar words):
+Loop addresses increment by 1 lane-group per iteration. Each lane-group contains `LANES` 32-bit elements:
 
 ```asm
 # B1 benchmark loop for LANES=4, N=64 (16 iterations)
