@@ -95,9 +95,9 @@ module pc_imem_tb;
 
         // ---- Test 4: PC hold (pc_en=0) ----
         $display("-- T4: pc holds when pc_en=0 --");
-        pc_en = 0;
+        pc_en = 0; branch_en = 1; branch_target = 32'd10;
         @(posedge clk); #1;
-        check32(pc, 32'd3, "pc still 3 when pc_en=0");
+        check32(pc, 32'd3, "pc holds with branch_en=1 and pc_en=0");
 
         // ---- Test 5: Branch taken ----
         $display("-- T5: branch taken --");
@@ -124,8 +124,10 @@ module pc_imem_tb;
         $display("");
         if (fail_count == 0)
             $display("PASS  pc_imem_tb: all %0d checks passed", pass_count);
-        else
+        else begin
             $display("FAIL  pc_imem_tb: %0d passed, %0d FAILED", pass_count, fail_count);
+            $finish_and_return(1);
+        end
 
         $finish;
     end

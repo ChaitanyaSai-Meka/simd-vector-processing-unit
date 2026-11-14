@@ -48,7 +48,7 @@ The VPU uses 32-bit fixed-width instructions. All vector instructions operate la
 | `6'h11` | VST  | Vector Mem | Store `LANES` words from `vs1` to `dmem[rs1 + imm]` |
 | `6'h20` | SADDI| Scalar ALU | `rd = rs1 + sign_ext(imm[15:0])` |
 | `6'h21` | SLI  | Scalar ALU | `rd = sign_ext(imm[15:0])` |
-| `6'h22` | BNE  | Branch     | If `rs1 != rs2`, PC = PC + sign_ext(offset[15:0]) |
+| `6'h22` | BNE  | Branch     | If `rs1 != rs2`, PC = BNE address + sign_ext(offset[15:0]); otherwise PC = BNE address + 1 |
 | `6'h3F` | HALT | Control    | Assert `halted`, freeze PC |
 
 ### Scalar-operand form (`.S` suffix)
@@ -72,10 +72,10 @@ The FSM has 3 states: **FETCH → DECODE/EXECUTE → WRITEBACK**.
 | Vector Load (VLD) | 3 | Fetch instr | Read rs1, compute addr, dmem read (async) | Write vd |
 | Vector Store (VST) | 2 | Fetch instr | Read rs1+vs1, write dmem | — |
 | Scalar ALU (SADDI, SLI) | 3 | Fetch instr | Compute result | Write rd |
-| Branch (BNE) | 2 | Fetch instr | Compare rs1==rs2, update PC | — |
-| HALT | 2 | Fetch instr | Assert halted | — |
+| Branch (BNE) | 2 | Fetch instr | Compare rs1 and rs2, update PC | — |
+| HALT | 2 | Fetch instr | Latch halted and hold the PC at HALT | — |
 
-> **Design note (D-001):** VST and BNE skip WRITEBACK because they produce no register write-back. The FSM still enters a 2-cycle "WRITEBACK" state but `we` is deasserted.
+> VST and BNE return directly to FETCH after DECODE/EXECUTE. HALT holds the controller in DECODE/EXECUTE until reset. See [Control FSM](control_fsm.md) for PC enables and counter timing.
 
 ---
 

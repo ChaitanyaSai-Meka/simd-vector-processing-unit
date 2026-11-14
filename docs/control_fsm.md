@@ -4,92 +4,72 @@
 **Owner:** Jagruthi Pulumati (Role 3, Control and Memory)
 **Note:** This document describes the FSM design only. RTL (`control_unit.v`) is built in Phase II.
 
----
-
 ## Overview
 
-The VPU control unit is a **single-issue, non-pipelined Moore FSM** with 3 states. It decodes the fetched instruction and produces all datapath control signals. The same FSM drives every instruction type; cycle count varies only for 2-cycle vs 3-cycle instructions.
-
----
+The VPU has a single-issue, non-pipelined controller with three states and a latched `halted` flag. Active instructions take two or three cycles.
 
 ## State Diagram
 
 ```mermaid
 stateDiagram-v2
     [*] --> FETCH
-
-    FETCH --> DECODE_EX : always (1 cycle)
-    DECODE_EX --> WRITEBACK : 3-cycle instr\n(Vector ALU, VLD, Scalar ALU)
-    DECODE_EX --> FETCH : 2-cycle instr\n(VST, BNE, HALT)
-    WRITEBACK --> FETCH : always (unless HALT)
-    WRITEBACK --> WRITEBACK : HALT\n(halted=1, freeze)
+    FETCH --> DECODE_EX : Instruction available
+    DECODE_EX --> WRITEBACK : Vector ALU, VLD, scalar ALU
+    DECODE_EX --> FETCH : VST or BNE
+    DECODE_EX --> DECODE_EX : HALT or halted
+    WRITEBACK --> FETCH : Write-back complete
 ```
 
----
+Synchronous reset returns the controller to FETCH, clears `halted` and both counters, and resets the PC to zero.
 
 ## State Descriptions
 
 ### FETCH (1 cycle)
-- `pc_imem` presents the current instruction on `instr`.
-- `cycle_count` increments.
-- `instr_count` increments.
-- PC advance (`pc_en=1`) is registered — the new PC value takes effect next cycle.
-- No register reads, no ALU activity.
+
+- `pc_imem` presents the current instruction on `instr`. Latch it at the end of FETCH.
+- Keep `pc_en=0` so the PC still points to this instruction during DECODE/EXECUTE.
+- Increment `instr_count` once per fetched instruction, including HALT.
 
 ### DECODE/EXECUTE (1 cycle)
-- Instruction fields are decoded: `opcode`, `vd`, `vs1`, `vs2`, `opb_sel`, `imm`.
-- `vreg_file` and `sreg_file` are read combinationally (async read ports).
-- `lane_array` computes all lane results combinationally.
-- `dmem` is addressed for VLD/VST.
-- For VST: `dmem` write enable is asserted → data written to memory at end of this cycle.
-- For BNE: branch condition evaluated; if taken, `branch_en=1` and `branch_target = PC + sign_ext(offset)`.
-- For HALT: `halted` asserted; FSM loops in DECODE_EX (or transitions to WRITEBACK loop).
+
+- Decode the saved instruction, read registers and compute the result or effective address.
+- For VST, write the vector to data memory at the end of this cycle.
+- For instructions that write a register, capture the result and destination for WRITEBACK. For VLD, include the data returned by the asynchronous memory read.
+- For each non-HALT instruction, set `pc_en=1`. For a taken BNE, also set `branch_en=1` and set `branch_target` to the address of the BNE plus its sign-extended offset. With `branch_en=0`, the PC advances by one word.
+- On HALT, keep `pc_en=0`, leave all write enables low, and set the latched `halted` flag at the end of this cycle. Stay in DECODE/EXECUTE with the PC, counters, and write enables held until reset. The PC remains at the HALT instruction.
 
 ### WRITEBACK (1 cycle)
-- For Vector ALU: `result_combiner` selects ALU result (`res_sel=0`), `vreg_file.we=1`.
-- For VLD: `result_combiner` selects memory data (`res_sel=1`), `vreg_file.we=1`.
-- For Scalar ALU: `sreg_file.we=1`, write computed result.
-- For VST/BNE: `we=0`, nothing written — cycle effectively a no-op.
 
----
+- For vector ALU operations, select the saved ALU result with `res_sel=0` and assert `vreg_we`.
+- For VLD, select the saved memory result with `res_sel=1` and assert `vreg_we`.
+- For scalar ALU instructions, assert `sreg_we` and write the saved result.
+- Hold the PC with `pc_en=0` and return to FETCH. VST, BNE, and HALT do not enter WRITEBACK.
 
 ## Control Signal Decode Table
 
-| Opcode | State sequence | `vreg_we` | `sreg_we` | `dmem_we` | `res_sel` | `pc_en` | `branch_en` | `halted` |
-|--------|---------------|-----------|-----------|-----------|-----------|---------|-------------|---------|
-| VADD..VSRL | F→DE→WB | 1 (WB) | 0 | 0 | 0 | 1 (F) | 0 | 0 |
-| VLD | F→DE→WB | 1 (WB) | 0 | 0 | 1 | 1 (F) | 0 | 0 |
-| VST | F→DE | 0 | 0 | 1 (DE) | — | 1 (F) | 0 | 0 |
-| SADDI/SLI | F→DE→WB | 0 | 1 (WB) | 0 | — | 1 (F) | 0 | 0 |
-| BNE (taken) | F→DE | 0 | 0 | 0 | — | 0 | 1 (DE) | 0 |
-| BNE (not taken) | F→DE | 0 | 0 | 0 | — | 1 (F) | 0 | 0 |
-| HALT | F→DE | 0 | 0 | 0 | — | 0 | 0 | 1 |
+| Opcode | State sequence | `vreg_we` | `sreg_we` | `dmem_we` | `res_sel` (WB) | `pc_en` | `branch_en` |
+|--------|---------------|-----------|-----------|-----------|---------|---------|-------------|
+| VADD..VSRL | F→DE→WB | 1 (WB) | 0 | 0 | 0 | 1 (DE) | 0 |
+| VLD | F→DE→WB | 1 (WB) | 0 | 0 | 1 | 1 (DE) | 0 |
+| VST | F→DE | 0 | 0 | 1 (DE) | — | 1 (DE) | 0 |
+| SADDI/SLI | F→DE→WB | 0 | 1 (WB) | 0 | — | 1 (DE) | 0 |
+| BNE (taken) | F→DE | 0 | 0 | 0 | — | 1 (DE) | 1 (DE) |
+| BNE (not taken) | F→DE | 0 | 0 | 0 | — | 1 (DE) | 0 |
+| HALT | F→DE, then hold | 0 | 0 | 0 | — | 0 | 0 |
 
-> F = FETCH, DE = DECODE/EXECUTE, WB = WRITEBACK. Signal asserted in the cycle noted.
+F = FETCH, DE = DECODE/EXECUTE, WB = WRITEBACK. Enables are low outside the indicated state and while halted.
 
----
+## Cycle Counts
 
-## Cycle Count Summary
+`cycle_count` increments on each active cycle after reset, including the DECODE/EXECUTE cycle that sets `halted`. Subsequent cycles leave both counters unchanged until reset.
 
-```
-cycle_count increments every cycle from rst until halted.
-
-Instruction             Cycles
-─────────────────────────────
-Vector ALU (any)          3
-VLD                       3
-VST                       2
-SADDI, SLI                3
-BNE (taken or not)        2
-HALT                      2  (then frozen)
-```
-
----
+| Instruction | Cycles |
+|-------------|--------|
+| Vector ALU, VLD, SADDI, SLI | 3 |
+| VST, BNE (either outcome), HALT | 2 |
 
 ## Handoff for Phase II
 
-The RTL `rtl/control_unit.v` will implement this FSM exactly. Ports will follow the interface contract in `docs/interfaces.md`. Key implementation notes:
-
-- Use a 2-bit state register: `2'b00=FETCH`, `2'b01=DECODE_EX`, `2'b10=WRITEBACK`.
-- Decode `opcode[31:26]` with a `case` statement to set all control signals combinationally in DECODE_EX.
-- `cycle_count` and `instr_count` are 32-bit counters, reset by `rst`, frozen when `halted`.
+- Use a 2-bit state register (`2'b00=FETCH`, `2'b01=DECODE_EX`, `2'b10=WRITEBACK`) and a separate `halted` register.
+- Use the saved instruction's opcode bits `[31:26]` in DECODE/EXECUTE. Branch control depends on the comparison result in that cycle.
+- Follow port definitions in `docs/interfaces.md`. Both counters are 32-bit registers.

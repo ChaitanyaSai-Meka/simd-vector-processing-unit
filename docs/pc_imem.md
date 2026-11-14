@@ -15,9 +15,9 @@ Set `INIT_FILE` to a hex filename (for example, `imem_init.hex`) to preload inst
 
 Combining PC and IMEM avoids a registered delay between "PC has new value" and "instruction is visible" — the new instruction appears combinationally in the next cycle. The Harvard architecture (separate IMEM and DMEM) means instruction fetches never conflict with data memory operations.
 
-**`pc_en`** is asserted only in the FETCH state (by `control_unit`). In DECODE/EXECUTE and WRITEBACK states, `pc_en=0` holds the PC so the control unit continues to decode the same instruction. This is the simplest non-pipelined approach.
+The Phase II controller holds the PC during FETCH and WRITEBACK. It asserts `pc_en` in DECODE/EXECUTE to advance the PC for non-HALT instructions. HALT holds the PC at the HALT instruction until reset.
 
-**`branch_en`** overrides the normal `PC+1` increment with `branch_target` when `pc_en=1`. Both signals are asserted simultaneously (in FETCH of a branch instruction whose target is already computed).
+**`branch_en`** selects `branch_target` when `pc_en=1`. A taken branch asserts both signals in DECODE/EXECUTE. A branch that falls through asserts only `pc_en`.
 
 ## Timing
 
@@ -27,9 +27,9 @@ Combining PC and IMEM avoids a registered delay between "PC has new value" and "
 
 ## Worked example: BNE taken
 
-Before FETCH: `pc = 5`, `imem[5] = BNE r1, r2, -3` (target = `5 + (-3) = 2`)
+During FETCH: `pc = 5`, `imem[5] = BNE r1, r2, -3` (target = `5 + (-3) = 2`)
 
-FETCH cycle:
+DECODE/EXECUTE cycle:
 - `pc_en=1`, `branch_en=1`, `branch_target=2`
 - Rising edge: `pc ← 2`
 
@@ -37,4 +37,4 @@ Next cycle: `instr = imem[2]` — execution continues from address 2.
 
 ## Worked example: sequential execution
 
-PC=0,1,2,3... Each FETCH cycle: `pc_en=1`, `branch_en=0` → `pc ← pc + 1`.
+PC=0,1,2,3... At the end of DECODE/EXECUTE for each sequential instruction: `pc_en=1`, `branch_en=0` → `pc ← pc + 1`.
