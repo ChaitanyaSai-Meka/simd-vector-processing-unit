@@ -242,7 +242,7 @@ module dmem #(
 ### `pc_imem.v`
 
 Program counter + instruction memory.
-- PC increments by 1 (word-addressed) each cycle unless a branch is taken.
+- With `pc_en=1`, the PC advances by one word or loads the branch target.
 - Instruction memory is optionally preloaded via `$readmemh` when `INIT_FILE` specifies a hex filename.
 - Synchronous reset sets PC to 0.
 
@@ -254,8 +254,8 @@ module pc_imem #(
 ) (
     input              clk,
     input              rst,       // synchronous active-high reset
-    input              pc_en,     // 1 = advance PC (FETCH phase)
-    input              branch_en, // 1 = load branch_target instead of PC+1
+    input              pc_en,     // 1 = update PC on the rising edge
+    input              branch_en, // 1 = select branch_target when pc_en=1
     input  [31:0]      branch_target,
     output reg [31:0]  pc,        // current program counter
     output [31:0]      instr      // instruction at current PC (combinational)
@@ -266,7 +266,7 @@ module pc_imem #(
 
 ### `vpu_demo_top.v` (Step 5 — Lalithendra)
 
-Demo datapath for Phase I. Wires all modules together without a full control FSM. Testbench drives control signals directly.
+Demo datapath for Phase I. Integrates the datapath modules. The testbench drives control signals directly. The instruction and data memories are tested separately.
 
 ```verilog
 module vpu_demo_top #(

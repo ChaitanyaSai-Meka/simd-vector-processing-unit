@@ -20,7 +20,7 @@
 
 ## What This Project Is
 
-A parameterized **SIMD Vector Processing Unit** in synthesizable Verilog-2001. One instruction operates on all `LANES` data lanes in parallel (default: 4 lanes × 32 bits). Every module is verified with self-checking testbenches (201 checks, all passing), alongside a Python golden reference model. A Vivado synthesis script for Artix-7 is ready; synthesis results are Phase II work.
+A parameterized **SIMD Vector Processing Unit** in synthesizable Verilog-2001. One instruction operates on all `LANES` data lanes in parallel (default: 4 lanes × 32 bits). Self-checking module and integration tests cover 203 RTL checks, alongside a Python golden reference model. A Vivado synthesis script for Artix-7 is ready; synthesis results are Phase II work.
 
 Key features:
 - Parameterized lane count: `LANES ∈ {1, 2, 4, 8}` (same RTL, no edits needed)
@@ -28,7 +28,7 @@ Key features:
 - Scalar-broadcast addressing (`.S` suffix): `vd[i] = vs1[i] op rs2`
 - 8 vector registers (`v0..v7`), 8 scalar registers (`r0..r7`, `r0 = 0`)
 - Harvard architecture: separate instruction and data memories
-- Self-checking testbenches with PASS/FAIL output for every module
+- Self-checking module and integration tests with PASS/FAIL output
 
 ---
 
@@ -45,13 +45,14 @@ simd-vector-processing-unit/
 │   ├── result_combiner.v  ALU/load write-back mux
 │   ├── dmem.v             Wide-port data memory (LANES×32 bits)
 │   ├── pc_imem.v          Program counter and instruction memory
-│   └── vpu_demo_top.v     Phase I demo datapath (all modules wired together)
+│   └── vpu_demo_top.v     Phase I demo datapath (memories tested separately)
 ├── tb/                    Self-checking testbenches (Icarus Verilog)
 │   ├── lane_alu_tb.v
 │   ├── lane_mux_tb.v
 │   ├── lane_array_tb.v    Parameterized — compile with -DLANES=1/4/8
 │   ├── vreg_file_tb.v
 │   ├── sreg_file_tb.v
+│   ├── result_combiner_tb.v
 │   ├── dmem_tb.v
 │   ├── pc_imem_tb.v
 │   └── vpu_demo_top_tb.v  Full demo datapath test + VCD waveform
@@ -101,7 +102,7 @@ python3 --version
 ```bash
 make test
 ```
-Expected output: every testbench prints `PASS <name>: all N checks passed`.
+A passing run prints a PASS summary for each testbench. A failed check makes the simulator and `make test` exit with a nonzero status.
 
 ### Run a specific testbench manually
 ```bash
@@ -116,7 +117,7 @@ for L in 1 4 8; do
 done
 
 # demo top
-iverilog -DLANES=4 -o /tmp/demo.vvp tb/vpu_demo_top_tb.v rtl/*.v && vvp /tmp/demo.vvp
+iverilog -s vpu_demo_top_tb -DLANES=4 -o /tmp/demo.vvp tb/vpu_demo_top_tb.v rtl/*.v && vvp /tmp/demo.vvp
 ```
 
 ### Generate waveform (GTKWave)

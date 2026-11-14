@@ -45,3 +45,8 @@ All ambiguous choices are recorded here per agent rule 8.
 | Vivado | `vivado -version` | For synth only |
 
 *(Fill in actual version numbers after running toolchain check.)*
+
+### D-008: PC update and HALT timing
+**Decision:** Update the PC at the end of DECODE/EXECUTE. A taken BNE asserts both `pc_en` and `branch_en` and uses the BNE instruction address as the offset base. HALT latches `halted` and holds the controller in DECODE/EXECUTE until reset.
+**Rationale:** The PC remains at the current instruction during decode. A branch outcome can select the next PC in the same cycle, and HALT can freeze the PC at its own address.
+**Modules affected:** `control_unit.v`, `pc_imem.v`, `verif/asm.py`

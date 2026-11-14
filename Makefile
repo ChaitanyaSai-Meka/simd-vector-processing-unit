@@ -41,14 +41,15 @@ test: golden_self_test
 	@mkdir -p $(BUILD_DIR)
 	@$(MAKE) _run_tb TB_SRC=$(TB)/lane_alu_tb.v    TB_NAME=lane_alu_tb    EXTRA_SRC="$(RTL)/lane_alu.v"
 	@$(MAKE) _run_tb TB_SRC=$(TB)/lane_mux_tb.v    TB_NAME=lane_mux_tb    EXTRA_SRC="$(RTL)/lane_mux.v"
-	@for L in 1 4 8; do \
+	@set -e; for L in 1 4 8; do \
 	    echo "--- lane_array_tb LANES=$$L ---"; \
 	    $(IVERILOG) -DLANES=$$L -o $(BUILD_DIR)/lane_array_tb_L$$L.vvp \
-	        $(TB)/lane_array_tb.v $(RTL)/lane_array.v $(RTL)/lane_alu.v $(RTL)/lane_mux.v && \
+	        $(TB)/lane_array_tb.v $(RTL)/lane_array.v $(RTL)/lane_alu.v $(RTL)/lane_mux.v; \
 	    $(VVP) $(BUILD_DIR)/lane_array_tb_L$$L.vvp; \
 	done
 	@$(MAKE) _run_tb TB_SRC=$(TB)/vreg_file_tb.v   TB_NAME=vreg_file_tb   EXTRA_SRC="$(RTL)/vreg_file.v"
 	@$(MAKE) _run_tb TB_SRC=$(TB)/sreg_file_tb.v   TB_NAME=sreg_file_tb   EXTRA_SRC="$(RTL)/sreg_file.v"
+	@$(MAKE) _run_tb TB_SRC=$(TB)/result_combiner_tb.v TB_NAME=result_combiner_tb EXTRA_SRC="$(RTL)/result_combiner.v"
 	@$(MAKE) _run_tb TB_SRC=$(TB)/dmem_tb.v        TB_NAME=dmem_tb        EXTRA_SRC="$(RTL)/dmem.v"
 	@$(MAKE) _run_tb TB_SRC=$(TB)/pc_imem_tb.v     TB_NAME=pc_imem_tb     EXTRA_SRC="$(RTL)/pc_imem.v"
 	@$(MAKE) _run_demo_tb
@@ -66,7 +67,7 @@ _run_tb:
 # ── internal: compile + run vpu_demo_top_tb with all RTL ─────────────────────
 _run_demo_tb:
 	@echo "--- vpu_demo_top_tb LANES=$(LANES) ---"
-	@$(IVERILOG) -DLANES=$(LANES) -o $(BUILD_DIR)/vpu_demo_top_tb.vvp \
+	@$(IVERILOG) -s vpu_demo_top_tb -DLANES=$(LANES) -o $(BUILD_DIR)/vpu_demo_top_tb.vvp \
 	    $(TB)/vpu_demo_top_tb.v $(RTL_SRCS) && \
 	    $(VVP) $(BUILD_DIR)/vpu_demo_top_tb.vvp
 
@@ -74,7 +75,7 @@ _run_demo_tb:
 wave:
 	@echo "--- Generating waveform VCD (LANES=4) ---"
 	@mkdir -p $(BUILD_DIR) docs
-	@$(IVERILOG) -DLANES=4 -o $(BUILD_DIR)/wave_tb.vvp \
+	@$(IVERILOG) -s vpu_demo_top_tb -DLANES=4 -o $(BUILD_DIR)/wave_tb.vvp \
 	    $(TB)/vpu_demo_top_tb.v $(RTL_SRCS)
 	@$(VVP) $(BUILD_DIR)/wave_tb.vvp
 	@echo "VCD written to: $(VCD_FILE)"
