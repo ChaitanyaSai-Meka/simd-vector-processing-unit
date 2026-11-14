@@ -81,14 +81,16 @@ def edge_case_pairs():
 # ── hex file helpers ──────────────────────────────────────────────────────────
 def write_hex(filename, data, lanes, dw=32):
     """Write list of 32-bit words as a Verilog $readmemh-compatible hex file.
-    For vectors: data is a list of lanes values per group; written as LANES words
-    per line (lane 0 leftmost within the group, little-endian within the flat bus).
-    For scalar arrays: data is a flat list of words, one per line.
+    For vectors: data is a list of lane groups. Each group is written as one
+    hex value with lane 0 in the least significant bits (rightmost digits).
+    At one lane, both singleton groups and flat lists of words are accepted.
     """
     os.makedirs(os.path.dirname(filename) if os.path.dirname(filename) else '.', exist_ok=True)
     with open(filename, 'w') as f:
         if lanes == 1:
             for word in data:
+                if isinstance(word, (list, tuple)):
+                    word, = word
                 f.write(f'{word & MASK32:08x}\n')
         else:
             # data is list of lane-groups: each group = list of LANES words

@@ -23,6 +23,7 @@ Verification of the SIMD VPU follows a **golden-model-first** strategy. The Pyth
 | `tb/lane_array_tb.v` | Parameterized test for `lane_array` at LANES=1, 4, 8 |
 | `tb/dmem_tb.v` | Unit test for `dmem`: wide port, all lanes, we guard |
 | `tb/pc_imem_tb.v` | Unit test for `pc_imem`: reset, sequential, branch |
+| `tb/vpu_demo_top_tb.v` | Integrated datapath test: VADD, VSUB, VAND, vector VSLT, VADD overflow |
 
 ---
 
@@ -60,6 +61,10 @@ In `lane_array_tb`: set all lanes to the same input, change only lane 0's input,
 ### 5. Golden Model Self-Test
 
 `python3 verif/golden.py --self-test` runs built-in assertions on the Python model itself before it is used to generate hex files. This catches bugs in the reference model before they contaminate the testbench.
+
+### 6. Vector Compare and Scalar Broadcast
+
+In `vpu_demo_top_tb` T4, `VSLT v6, v0, v5` compares `v0` lane by lane against `v5 = [5, 5, 5, 5]` in the four-lane run, with `opb_sel = 0`. Scalar broadcast (`opb_sel = 1`) is exercised separately by `lane_mux_tb` and `lane_array_tb`.
 
 ---
 
