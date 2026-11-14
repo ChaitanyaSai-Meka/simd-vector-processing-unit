@@ -7,7 +7,7 @@
 
 ## Overview
 
-Verification of the SIMD VPU follows a **golden-model-first** strategy. The Python script `verif/golden.py` is the reference — RTL output is never compared against itself. A test passes only when the testbench prints `PASS` and exits 0; `FAIL` lines include expected vs actual values.
+Verification of the SIMD VPU follows a **golden-model-first** strategy. The Python script `verif/golden.py` is the reference — RTL output is never compared against itself. A test passes only when the testbench prints `PASS` and exits 0; `FAIL` lines include expected vs actual values, and failed checks return a nonzero simulator exit status.
 
 ---
 
@@ -21,6 +21,7 @@ Verification of the SIMD VPU follows a **golden-model-first** strategy. The Pyth
 | `tb/vreg_file_tb.v` | Unit test for `vreg_file`: all 8 regs, both ports, sync/async timing |
 | `tb/sreg_file_tb.v` | Unit test for `sreg_file`: r0 invariant, write guard |
 | `tb/lane_array_tb.v` | Parameterized test for `lane_array` at LANES=1, 4, 8 |
+| `tb/result_combiner_tb.v` | Unit test for the ALU and memory-data write-back selections |
 | `tb/dmem_tb.v` | Unit test for `dmem`: wide port, all lanes, we guard |
 | `tb/pc_imem_tb.v` | Unit test for `pc_imem`: reset, sequential, branch |
 | `tb/vpu_demo_top_tb.v` | Integrated datapath test: VADD, VSUB, VAND, vector VSLT, VADD overflow |
@@ -31,7 +32,7 @@ Verification of the SIMD VPU follows a **golden-model-first** strategy. The Pyth
 
 ### 1. Unit Tests (Phase I)
 
-Each module has its own self-checking testbench. Tests are:
+Phase I uses self-checking module and integration tests. Tests are:
 - **Directed:** specific corner cases crafted by hand
 - **Self-checking:** testbench computes expected value and compares; prints `PASS` or `FAIL expected=X actual=Y`
 

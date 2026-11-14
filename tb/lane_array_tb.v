@@ -142,8 +142,10 @@ module lane_array_tb;
         $display("");
         if (fail_count == 0)
             $display("PASS  lane_array_tb LANES=%0d: all %0d checks passed", LANES, pass_count);
-        else
+        else begin
             $display("FAIL  lane_array_tb LANES=%0d: %0d passed, %0d FAILED", LANES, pass_count, fail_count);
+            $finish_and_return(1);
+        end
 
         $finish;
     end

@@ -74,8 +74,10 @@ module lane_mux_tb;
         $display("");
         if (fail_count == 0)
             $display("PASS  lane_mux_tb: all %0d checks passed", pass_count);
-        else
+        else begin
             $display("FAIL  lane_mux_tb: %0d passed, %0d FAILED", pass_count, fail_count);
+            $finish_and_return(1);
+        end
 
         $finish;
     end

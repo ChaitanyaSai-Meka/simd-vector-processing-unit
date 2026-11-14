@@ -139,8 +139,10 @@ module vreg_file_tb;
         $display("");
         if (fail_count == 0)
             $display("PASS  vreg_file_tb: all %0d checks passed", pass_count);
-        else
+        else begin
             $display("FAIL  vreg_file_tb: %0d passed, %0d FAILED", pass_count, fail_count);
+            $finish_and_return(1);
+        end
 
         $finish;
     end
