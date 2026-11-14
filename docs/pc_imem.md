@@ -9,6 +9,8 @@
 
 `pc_imem` combines the program counter (PC) and the instruction memory (IMEM) in one module. The PC is a 32-bit word-addressed register. The IMEM is a synchronous-write, asynchronous-read ROM (in practice, a register array loaded from a hex file). The module presents the current instruction at `instr` combinationally based on the current PC.
 
+Set `INIT_FILE` to a hex filename (for example, `imem_init.hex`) to preload instruction memory via `$readmemh`. The default empty string skips preloading.
+
 ## Why it is built this way
 
 Combining PC and IMEM avoids a registered delay between "PC has new value" and "instruction is visible" — the new instruction appears combinationally in the next cycle. The Harvard architecture (separate IMEM and DMEM) means instruction fetches never conflict with data memory operations.

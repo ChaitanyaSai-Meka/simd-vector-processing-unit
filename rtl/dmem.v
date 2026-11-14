@@ -1,7 +1,7 @@
 // dmem.v
 // Data memory with one wide port of LANES*DW bits.
 // Word-addressed by lane-group: address A selects words [A*LANES .. A*LANES+LANES-1].
-// Asynchronous read, synchronous write. Loaded from hex file via $readmemh.
+// Asynchronous read, synchronous write. Optional hex-file preload.
 // Part of: SIMD Vector Processing Unit, LANE BREAKERS
 // Owner: Jagruthi Pulumati (Role 3, Control and Memory)
 
@@ -11,7 +11,8 @@ module dmem #(
     parameter LANES   = 4,
     parameter DW      = 32,
     parameter DEPTH   = 256,   // number of lane-groups storable
-    parameter ADDR_W  = 8      // ceil(log2(DEPTH)); must match DEPTH
+    parameter ADDR_W  = 8,     // ceil(log2(DEPTH)); must match DEPTH
+    parameter INIT_FILE = ""  // optional hex file, one lane-group per word
 ) (
     input                    clk,
     input                    we,      // write enable (active high, synchronous)
@@ -22,9 +23,10 @@ module dmem #(
 
     reg [LANES*DW-1:0] mem [0:DEPTH-1];
 
-    // Initialise from hex file when provided; silently skipped if file absent
+    // Initialise from hex only when a filename is configured.
     initial begin
-        $readmemh("dmem_init.hex", mem);
+        if (INIT_FILE != "")
+            $readmemh(INIT_FILE, mem);
     end
 
     // Asynchronous read

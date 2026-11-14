@@ -11,7 +11,7 @@
 
 - **Address `A`** accesses words `[A×LANES .. A×LANES+LANES-1]` of the logical array.
 - With LANES=4 and DW=32, the port is 128 bits wide — one full vector read or write per cycle.
-- Memory contents can be preloaded from a hex file at simulation start via `$readmemh("dmem_init.hex", mem)`.
+- Set `INIT_FILE` to a hex filename (for example, `dmem_init.hex`) to preload memory via `$readmemh`. The default empty string skips preloading.
 
 ## Why it is built this way
 

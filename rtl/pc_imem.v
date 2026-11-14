@@ -1,7 +1,7 @@
 // pc_imem.v
 // Program counter and instruction memory.
 // PC increments by 1 (word-addressed) each FETCH cycle unless a branch is taken.
-// Instruction memory loaded from hex file via $readmemh.
+// Instruction memory supports optional hex-file preload.
 // Synchronous reset sets PC to 0. Asynchronous instruction read.
 // Part of: SIMD Vector Processing Unit, LANE BREAKERS
 // Owner: Jagruthi Pulumati (Role 3, Control and Memory)
@@ -10,7 +10,8 @@
 
 module pc_imem #(
     parameter IMEM_DEPTH = 256,
-    parameter ADDR_W     = 8    // ceil(log2(IMEM_DEPTH))
+    parameter ADDR_W     = 8,   // ceil(log2(IMEM_DEPTH))
+    parameter INIT_FILE  = ""  // optional hex file, one instruction per word
 ) (
     input              clk,
     input              rst,           // synchronous active-high reset; sets PC to 0
@@ -23,9 +24,10 @@ module pc_imem #(
 
     reg [31:0] imem [0:IMEM_DEPTH-1];
 
-    // Load instruction memory from hex file at start of simulation
+    // Initialise from hex only when a filename is configured.
     initial begin
-        $readmemh("imem_init.hex", imem);
+        if (INIT_FILE != "")
+            $readmemh(INIT_FILE, imem);
     end
 
     // Synchronous PC update
