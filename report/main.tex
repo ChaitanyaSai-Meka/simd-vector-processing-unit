@@ -195,7 +195,7 @@ instruction performs \texttt{LANES} operations in parallel.
     \node[lane] (a\i) at (3.35,\y) {ALU \i};
     \draw[->] (m\i) -- (a\i);
   }
-  \node[draw, dashed, thick, inner sep=3pt, fit=(m0)(a3)] (la) {};
+  \node[draw, thick, inner sep=3pt, fit=(m0)(a3)] (la) {};
   \node[font=\scriptsize, above=0pt of la] {\texttt{lane\_array} (\texttt{LANES} copies)};
 
   \node[blk, minimum width=13mm] (rc) at (5.2,0) {\texttt{result\_}\\\texttt{combiner}};
@@ -349,21 +349,25 @@ Testbench & Scope & Checks & Result \\
 
 The integrated testbench (\texttt{vpu\_demo\_top\_tb}) loads two vectors into
 \texttt{v0} and \texttt{v1}, then executes \texttt{VADD}, \texttt{VSUB},
-\texttt{VAND}, a scalar-broadcast \texttt{VSLT.S}, and an all-lane overflow
-case. For example, with $v0 = [1, 2, 3, 4]$ and $v1 = [10, 11, 12, 13]$,
+\texttt{VAND}, a vector-vector \texttt{VSLT}, and an all-lane overflow
+case. Test T4 compares \texttt{v0} against $v5 = [5, 5, 5, 5]$ with
+\texttt{opb\_sel}\,=\,0 and writes the result to \texttt{v6}.
+The \texttt{lane\_mux\_tb} and \texttt{lane\_array\_tb} tests exercise scalar
+broadcast with \texttt{opb\_sel}\,=\,1.
+
+In the VADD test, with $v0 = [1, 2, 3, 4]$ and $v1 = [10, 11, 12, 13]$,
 \texttt{VADD v2, v0, v1} produces $v2 = [11, 13, 15, 17]$, and all four lanes
-are written on the same clock edge. Fig.~\ref{fig:wave} shows the simulation
-waveform: the 128-bit \texttt{alu\_result} bus (four lanes) changes in the same
-cycle as \texttt{alu\_op}, and the value is written back when
-\texttt{vreg\_we} is asserted.
+are written on the same clock edge. Fig.~\ref{fig:wave} shows the four lane
+values on \texttt{alu\_result} before write-back and on \texttt{result\_out}
+when the testbench reads back \texttt{v2}.
 
 \begin{figure*}[!t]
 \centering
-\includegraphics[width=\textwidth,trim=130 512 0 50,clip]{vadd_4lane_waveform.png}
-\caption{Simulation waveform of \texttt{vpu\_demo\_top} at \texttt{LANES}\,=\,4
-(viewed in Surfer). Each \texttt{alu\_op} value (0\,=\,VADD, 1\,=\,VSUB,
-2\,=\,VAND, 5\,=\,VSLT) produces a full 128-bit, four-lane result in one cycle,
-written back on the \texttt{vreg\_we} pulse.}
+\includegraphics[width=\textwidth]{./vadd_writeback_waveform.pdf}
+\caption{Four-lane VADD waveform from the \texttt{vpu\_demo\_top\_tb} simulation.
+Bus values are shown in lane order 0 through 3. With \texttt{vreg\_we} high,
+the rising clock edge at 35~ns writes all four results to \texttt{v2}.
+The testbench selects \texttt{v2} for readback at 36~ns.}
 \label{fig:wave}
 \end{figure*}
 
