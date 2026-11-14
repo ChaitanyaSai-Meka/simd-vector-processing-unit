@@ -68,10 +68,11 @@ Verilog-2001. A single \texttt{LANES} parameter ($1, 2, 4,$ or $8$) replicates a
 cycle. The VPU supports nine lane-wise ALU operations (add, subtract, AND, OR,
 XOR, signed less-than, equality, and logical shifts), a scalar-broadcast operand
 mode, an 8-entry vector register file, an 8-entry scalar register file, and
-wide-port Harvard instruction and data memories. In Phase~I we implemented all
-datapath and memory modules, integrated them into a demonstration top level, and
-verified them with self-checking Icarus Verilog testbenches, alongside a Python
-golden reference model. All 10 testbench runs (201 individual checks, including lane-count
+wide-port Harvard instruction and data memories. In Phase~I we integrated the
+datapath modules into a demonstration top level and tested the instruction and
+data memories separately. We used self-checking Icarus Verilog module and
+integration tests alongside a Python golden reference model.
+All 11 RTL testbench runs (203 individual checks, including lane-count
 sweeps at 1, 4, and 8 lanes) pass, and simulation waveforms confirm that all four
 lanes of a vector add are written back in a single cycle. Phase~II will add the
 instruction-sequencing control unit, run benchmark programs to measure speedup
@@ -103,7 +104,7 @@ classic area-versus-performance trade-off of widening a datapath.
 \begin{enumerate}
   \item Implement a parameterized VPU in synthesizable Verilog-2001 supporting
         \texttt{LANES}\,$\in\{1,2,4,8\}$ from a single source.
-  \item Verify every module with self-checking testbenches and build a
+  \item Run self-checking module and integration tests and build a
         Python golden reference model. \emph{(Phase~I --- complete.)}
   \item Add a control unit that executes stored programs, and measure cycle-count
         speedup over the scalar (\texttt{LANES}\,=\,1) baseline. \emph{(Phase~II.)}
@@ -229,8 +230,9 @@ connected. In Phase~I the control signals are driven by the testbench through
 \end{figure}
 
 \subsection{Module Design}
-Table~\ref{tab:modules} lists the RTL modules. All are parameterized by
-\texttt{LANES} and data width \texttt{DW}\,=\,32.
+Table~\ref{tab:modules} lists the RTL modules. The vector datapath modules
+are parameterized by lane count (\texttt{LANES}) and data width (\texttt{DW},
+default 32 bits). The per-lane ALU and mux take \texttt{DW}.
 
 \begin{table}[!t]
 \caption{RTL Module Summary (Phase~I)}
@@ -283,11 +285,12 @@ load/store (\texttt{VLD}, \texttt{VST}), scalar \texttt{SADDI} and
 \texttt{HALT}. The full encoding is in \texttt{docs/isa.md}.
 
 \subsection{Control Unit Design}
-The control unit (to be implemented in Phase~II) is a three-state Moore FSM:
-FETCH $\to$ DECODE/EXECUTE $\to$ WRITEBACK. Vector ALU operations and
-\texttt{VLD} take three cycles; \texttt{VST}, \texttt{BNE}, and \texttt{HALT}
-take two. The state diagram and decode table are in
-\texttt{docs/control\_fsm.md}.
+The Phase~II control design uses FETCH, DECODE/EXECUTE, and WRITEBACK.
+Vector ALU operations and \texttt{VLD} take three cycles.
+\texttt{VST}, \texttt{BNE}, and \texttt{HALT} take two cycles.
+The PC updates in DECODE/EXECUTE for non-HALT instructions. A taken branch
+asserts both PC and branch enables. HALT holds the PC and latches
+\texttt{halted} until reset. See \texttt{docs/control\_fsm.md} for the decode table.
 
 \subsection{Key Design Decisions}
 \begin{itemize}
@@ -305,9 +308,9 @@ take two. The state diagram and decode table are in
 \section{Verification and Phase~I Progress}
 
 \subsection{Method}
-Each module has a self-checking testbench that drives inputs, compares outputs
-with expected values written into the testbench, and prints \texttt{PASS} or
-\texttt{FAIL: expected=X actual=Y}. Independently, a Python golden model
+Self-checking module and integration tests drive inputs, compare outputs
+with expected values, and print \texttt{PASS} or \texttt{FAIL}. A failed
+check produces a nonzero simulator exit status. Independently, a Python golden model
 (\texttt{verif/golden.py}) implements the same nine operations with 32-bit
 wrap-around and signed semantics; it has its own self-test and will generate
 the expected outputs for the Phase~II benchmark programs. Test vectors include
@@ -320,7 +323,7 @@ changing one lane's input must change only that lane's output. A single
 
 \subsection{Results}
 Table~\ref{tab:tests} shows the output of \texttt{make test} under Icarus
-Verilog. All 201 checks pass.
+Verilog. All 203 RTL checks pass.
 
 \begin{table}[!t]
 \caption{Phase~I Testbench Results (Icarus Verilog)}
@@ -338,11 +341,12 @@ Testbench & Scope & Checks & Result \\
 \texttt{lane\_array\_tb} & \texttt{LANES}\,=\,8 & 50 & PASS \\
 \texttt{vreg\_file\_tb} & all 8 regs, 2 ports & 17 & PASS \\
 \texttt{sreg\_file\_tb} & \texttt{r0}\,=\,0 invariant & 14 & PASS \\
+\texttt{result\_combiner\_tb} & ALU vs.\ load data & 2 & PASS \\
 \texttt{dmem\_tb}       & lane-group read/write & 9 & PASS \\
 \texttt{pc\_imem\_tb}   & reset, increment, branch & 12 & PASS \\
 \texttt{vpu\_demo\_top\_tb} & integrated datapath & 20 & PASS \\
 \midrule
-\multicolumn{2}{@{}l}{\textbf{Total (10 RTL testbench runs)}} & \textbf{201} & \textbf{PASS} \\
+\multicolumn{2}{@{}l}{\textbf{Total (11 RTL testbench runs)}} & \textbf{203} & \textbf{PASS} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -373,7 +377,7 @@ The testbench selects \texttt{v2} for readback at 36~ns.}
 
 \subsection{Phase~I Status}
 Completed: all nine RTL modules, the integrated demonstration datapath, the
-golden model, ten self-checking testbench runs, the ISA and control-FSM
+golden model, eleven self-checking RTL testbench runs, the ISA and control-FSM
 specification, design documentation for every module, a Vivado synthesis
 script, and an automated \texttt{Makefile} flow (\texttt{make test},
 \texttt{make wave}).
@@ -412,9 +416,9 @@ be seen in the version history.
         documentation.
   \item \textbf{Kasula Lalithendra} (Architecture and Integration): created the
         repository structure, project specification, interface contracts,
-        block diagram, and design-decision log; integrated all modules in
-        \texttt{vpu\_demo\_top} with its testbench; and built the
-        \texttt{Makefile} test and waveform flow.
+        block diagram, and design-decision log; integrated the datapath modules in
+        \texttt{vpu\_demo\_top}; and built the \texttt{Makefile} test and
+        waveform flow. The memories were tested separately.
   \item \textbf{Polana Rakshita} (Verification): wrote the Python golden model,
         the testbenches for the ALU, multiplexer, lane array (1/4/8 lanes), and
         register files, and the verification plan, and captured the 4-lane
@@ -425,8 +429,8 @@ be seen in the version history.
 \section{Conclusion}
 Phase~I delivers a complete, verified SIMD datapath: a single Verilog source
 that scales from one to eight 32-bit lanes and executes each vector instruction
-across all lanes in one cycle. Every module passes its self-checking
-testbench, covering edge cases and lane counts of 1, 4, and 8. Phase~II will turn this datapath into a
+across all lanes in one cycle. The self-checking module and integration tests
+cover edge cases and lane counts of 1, 4, and 8. Phase~II will turn this datapath into a
 programmable processor and measure its speedup and FPGA cost as the number of
 lanes grows.
 
