@@ -218,14 +218,16 @@ module result_combiner #(
 
 Data memory. One wide read/write port of `LANES*DW` bits.
 - Word-addressed by **lane group**: address `A` selects words `[A*LANES .. A*LANES+LANES-1]`.
-- Loaded from a hex file at simulation start via `$readmemh`.
+- Optionally preloaded via `$readmemh` when `INIT_FILE` specifies a hex filename.
 - **Write:** synchronous. **Read:** asynchronous (combinational).
 
 ```verilog
 module dmem #(
     parameter LANES = 4,
     parameter DW    = 32,
-    parameter DEPTH = 256    // number of lane-groups (total words = DEPTH * LANES)
+    parameter DEPTH = 256,   // number of lane-groups (total words = DEPTH * LANES)
+    parameter ADDR_W = 8,
+    parameter INIT_FILE = ""
 ) (
     input                   clk,
     input                   we,      // write enable
@@ -241,12 +243,14 @@ module dmem #(
 
 Program counter + instruction memory.
 - PC increments by 1 (word-addressed) each cycle unless a branch is taken.
-- Instruction memory loaded from hex file via `$readmemh`.
+- Instruction memory is optionally preloaded via `$readmemh` when `INIT_FILE` specifies a hex filename.
 - Synchronous reset sets PC to 0.
 
 ```verilog
 module pc_imem #(
-    parameter IMEM_DEPTH = 256
+    parameter IMEM_DEPTH = 256,
+    parameter ADDR_W = 8,
+    parameter INIT_FILE = ""
 ) (
     input              clk,
     input              rst,       // synchronous active-high reset

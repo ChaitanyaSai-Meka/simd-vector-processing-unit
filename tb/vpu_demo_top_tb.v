@@ -4,7 +4,7 @@
 //   1. Load two vectors into v0 and v1 via load_we.
 //   2. Issue VADD v2, v0, v1 — vreg_we writes result to v2.
 //   3. Read back v2 and verify lane-by-lane against expected values.
-// Also tests: VSUB, VAND, VSLT, scalar broadcast (opb_sel=1).
+// Also tests: VSUB, VAND, vector VSLT, and VADD overflow.
 // Prints PASS or FAIL per check. Final line: PASS or FAIL.
 // Owner: Kasula Lalithendra (Role 1, Architecture Lead)
 
@@ -157,13 +157,10 @@ module vpu_demo_top_tb;
             chk_lane(i, result_out[i*DW +: DW], (i+1) & (i+10), "VAND v0&v1");
 
         // =====================================================
-        // T4: VSLT.S v5 = (v0 < scalar_5) ? 1 : 0
+        // T4: VSLT v6, v0, v5 with every lane of v5 set to 5
         // =====================================================
-        $display("-- T4: VSLT.S v5 = v0 < 5 (scalar broadcast) --");
-        // scalar via sreg: for demo, build a vector where vs2 carries the scalar
-        // We use opb_sel=1 and load scalar value 5 into a sreg via vs2 path trick:
-        // Since sreg_file we=0 in this demo, use a pre-loaded vec as scalar workaround.
-        // Simple path: opb_sel=0, vs2 = all-5 vector
+        $display("-- T4: VSLT v6 = v0 < v5 (all lanes of v5 are 5) --");
+        // Use vector operand B (opb_sel=0).
         vec_b = 0;
         for (i = 0; i < LANES; i = i + 1)
             vec_b[i*DW +: DW] = 32'd5;
