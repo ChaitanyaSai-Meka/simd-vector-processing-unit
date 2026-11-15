@@ -4,6 +4,14 @@
 **Course:** Modern Computer Architecture — B.Tech CS & AI, Rishihood University / NST
 **Project:** #11 — SIMD Vector Processing Unit (Intermediate+, SIMD / Parallelism)
 
+
+---
+
+## Video Link
+
+📹 **[Phase I Prototype Demo](https://drive.google.com/file/d/1BOs8pTqxae582HhpIyToljCZeEjCFkbI/view?usp=sharing)**
+
+
 ---
 
 ## Team Members
@@ -162,17 +170,9 @@ The Phase I demo (`vpu_demo_top.v`) shows the core SIMD operation:
   v2 = [11, 13, 15, 17]   ← computed in ONE cycle
 ```
 
----
 
-## Video Link
 
-📹 **[Phase I Prototype Demo](https://drive.google.com/file/d/1BOs8pTqxae582HhpIyToljCZeEjCFkbI/view?usp=sharing)**
-
-Recording date: Saturday, November 14, 2026
-
----
-
-## Definition of Done (Phase I Checklist)
+## (Phase I Checklist)
 
 - [x] `make test` prints PASS for all unit tests and demo datapath
 - [x] Block diagram in `docs/block_diagram.md`
