@@ -166,7 +166,7 @@ The Phase I demo (`vpu_demo_top.v`) shows the core SIMD operation:
 
 ## Video Link
 
-📹 **[VIDEO LINK — replace after upload]**
+📹 **[Phase I Prototype Demo](https://drive.google.com/file/d/1BOs8pTqxae582HhpIyToljCZeEjCFkbI/view?usp=sharing)**
 
 Recording date: Saturday, November 14, 2026
 
@@ -181,5 +181,5 @@ Recording date: Saturday, November 14, 2026
 - [x] README has project idea, team names, how to run, video link placeholder
 - [x] Waveform screenshot of 4-lane VADD saved to `docs/` (run `make wave`)
 - [x] Individual Contributions filled in the report
-- [ ] Video link updated after recording
+- [x] Video link updated after recording
 
