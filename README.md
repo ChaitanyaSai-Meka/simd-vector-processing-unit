@@ -7,21 +7,26 @@ A parameterized **Single Instruction, Multiple Data (SIMD)** vector processing u
 
 ---
 
-## 📦 Phase I Deliverables
+## Phase I Submission
 
-| Deliverable | Link |
+> [!IMPORTANT]
+> **IEEE Report (PDF):** [report/SIMD_VPU_Phase1_Report.pdf](report/SIMD_VPU_Phase1_Report.pdf)
+>
+> **Prototype Demo Video:** [Phase I Prototype Demo (Google Drive)](https://drive.google.com/file/d/1J8yfL7EDzvQIP1-MFa14KIe3Ny5_jfE6/view?usp=sharing)
+
+### Project Artefacts
+
+| Artefact | Location |
 |---|---|
-| 📄 IEEE Report (PDF) | [`report/SIMD_VPU_Phase1_Report.pdf`](report/SIMD_VPU_Phase1_Report.pdf) |
-| 🎥 Prototype Demo Video | [Phase I Prototype Demo (Google Drive)](https://drive.google.com/file/d/1J8yfL7EDzvQIP1-MFa14KIe3Ny5_jfE6/view?usp=sharing) |
-| 🧩 RTL Source | [`rtl/`](rtl/) |
-| ✅ Testbenches | [`tb/`](tb/) — 203 RTL checks, all passing |
-| 🐍 Golden Model | [`verif/golden.py`](verif/golden.py) |
-| 📐 Design Docs | [`docs/`](docs/) — spec, ISA, interfaces, control FSM, per-module docs |
-| ⚙️ Synthesis Script | [`synth/run_synth.tcl`](synth/run_synth.tcl) — Vivado, Artix-7 |
+| RTL source | [`rtl/`](rtl/) |
+| Testbenches | [`tb/`](tb/) — 203 RTL checks, all passing |
+| Golden model | [`verif/golden.py`](verif/golden.py) |
+| Design docs | [`docs/`](docs/) — spec, ISA, interfaces, control FSM, per-module docs |
+| Synthesis script | [`synth/run_synth.tcl`](synth/run_synth.tcl) — Vivado, Artix-7 |
 
 ---
 
-## 👥 Team
+## Team
 
 | Member | Role | Phase I Work |
 |---|---|---|
@@ -33,59 +38,56 @@ A parameterized **Single Instruction, Multiple Data (SIMD)** vector processing u
 
 ---
 
-## 💡 The Idea in One Picture
+## The Idea in One Picture
 
 A scalar processor needs one instruction per element. A SIMD processor applies one instruction to every lane at once.
 
-```mermaid
-flowchart LR
-    subgraph S["Scalar: 4 instructions, 4 steps"]
-        direction TB
-        s1["1 + 10 = 11"] --> s2["2 + 11 = 13"] --> s3["3 + 12 = 15"] --> s4["4 + 13 = 17"]
-    end
-    subgraph V["SIMD (LANES = 4): 1 instruction, 1 step"]
-        direction TB
-        I(["VADD v2, v0, v1"]) --> L0["lane 0: 1 + 10 = 11"]
-        I --> L1["lane 1: 2 + 11 = 13"]
-        I --> L2["lane 2: 3 + 12 = 15"]
-        I --> L3["lane 3: 4 + 13 = 17"]
-    end
+```
+ Scalar: 4 instructions, 4 steps      SIMD, LANES = 4: 1 instruction, 1 step
+
+   step 1:  1 + 10 = 11                         VADD v2, v0, v1
+   step 2:  2 + 11 = 13                 ┌─────────┬──────┴──┬─────────┐
+   step 3:  3 + 12 = 15                 ▼         ▼         ▼         ▼
+   step 4:  4 + 13 = 17               lane 0    lane 1    lane 2    lane 3
+                                      1+10=11   2+11=13   3+12=15   4+13=17
+                                      └──── all four in ONE clock cycle ────┘
 ```
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 The VPU is a single-issue Harvard machine. Vector registers are flat `LANES × 32`-bit buses; lane *i* occupies bits `[i*32 +: 32]`. Changing the `LANES` parameter (1, 2, 4, 8) rescales the register file, lane array and memory width with no RTL edits.
 
 ```mermaid
-flowchart LR
-    VRF["vreg_file<br/>8 × (LANES×32)<br/>2 read / 1 write"]
-    SRF["sreg_file<br/>8 × 32, r0 = 0"]
+flowchart TB
+    VRF["vreg_file<br/>8 vector registers × (LANES×32 bits)<br/>2 read ports · 1 write port"]
+    SRF["sreg_file<br/>8 scalar registers × 32 bits<br/>r0 = 0"]
 
-    subgraph LA["lane_array (LANES copies, generate loop)"]
-        direction TB
-        M0["lane_mux 0"] --> A0["lane_alu 0"]
-        M1["lane_mux 1"] --> A1["lane_alu 1"]
-        M2["lane_mux 2"] --> A2["lane_alu 2"]
-        M3["lane_mux 3"] --> A3["lane_alu 3"]
+    subgraph LA["lane_array — LANES copies built by a generate loop"]
+        direction LR
+        A0["lane 0<br/>lane_mux → lane_alu"]
+        A1["lane 1<br/>lane_mux → lane_alu"]
+        A2["lane 2<br/>lane_mux → lane_alu"]
+        A3["lane 3<br/>lane_mux → lane_alu"]
     end
 
-    RC["result_combiner<br/>ALU or load data"]
-    DM["dmem<br/>(Phase II hookup)"]
-    CU["control_unit<br/>(Phase II)"]
-    PC["pc_imem<br/>(Phase II hookup)"]
+    RC["result_combiner<br/>ALU result or load data"]
 
-    VRF -- "vs1, vs2" --> LA
-    SRF -- "scalar (broadcast)" --> LA
+    VRF -- "vs1, vs2 (128 bits each)" --> LA
+    SRF -- "scalar, broadcast to all lanes" --> LA
     LA -- "alu_result" --> RC
-    DM -. "load data" .-> RC
     RC -- "write-back to vd" --> VRF
+
+    CU["control_unit<br/>Phase II"]
+    PC["pc_imem<br/>Phase II hookup"]
+    DM["dmem<br/>Phase II hookup"]
     PC -. "instruction" .-> CU
     CU -. "alu_op, opb_sel, write enables" .-> LA
+    DM -. "load data" .-> RC
 
     classDef future stroke-dasharray: 5 5;
-    class DM,CU,PC future
+    class CU,PC,DM future
 ```
 
 Solid paths are built and tested in Phase I. Dashed blocks are Phase II: `dmem` and `pc_imem` are implemented and unit-tested but not yet connected; the control unit is designed (see [`docs/control_fsm.md`](docs/control_fsm.md)). In Phase I the testbench drives the control signals through `vpu_demo_top`.
@@ -94,16 +96,16 @@ Solid paths are built and tested in Phase I. Dashed blocks are Phase II: `dmem` 
 
 | Module | Function | Status |
 |---|---|---|
-| `lane_alu` | Combinational 32-bit ALU, 9 operations via 4-bit `alu_op` | ✅ Built + tested |
-| `lane_mux` | Operand B: own `vs2` element, or scalar broadcast (`opb_sel`) | ✅ Built + tested |
-| `lane_array` | `generate` loop creating `LANES` mux + ALU pairs | ✅ Built + tested at 1/4/8 lanes |
-| `vreg_file` | 8 vector registers, async read, sync write | ✅ Built + tested |
-| `sreg_file` | 8 scalar registers, `r0` hard-wired to 0 | ✅ Built + tested |
-| `result_combiner` | Write-back select: ALU result or memory data | ✅ Built + tested |
-| `dmem` | One `LANES×32`-bit vector per address | ✅ Built + tested (standalone) |
-| `pc_imem` | Program counter with branch + instruction memory | ✅ Built + tested (standalone) |
-| `vpu_demo_top` | Phase I integrated datapath | ✅ Built + tested |
-| `control_unit` | FETCH → DECODE/EXECUTE → WRITEBACK FSM | 📝 Designed — Phase II |
+| `lane_alu` | Combinational 32-bit ALU, 9 operations via 4-bit `alu_op` | Built + tested |
+| `lane_mux` | Operand B: own `vs2` element, or scalar broadcast (`opb_sel`) | Built + tested |
+| `lane_array` | `generate` loop creating `LANES` mux + ALU pairs | Built + tested at 1/4/8 lanes |
+| `vreg_file` | 8 vector registers, async read, sync write | Built + tested |
+| `sreg_file` | 8 scalar registers, `r0` hard-wired to 0 | Built + tested |
+| `result_combiner` | Write-back select: ALU result or memory data | Built + tested |
+| `dmem` | One `LANES×32`-bit vector per address | Built + tested (standalone) |
+| `pc_imem` | Program counter with branch + instruction memory | Built + tested (standalone) |
+| `vpu_demo_top` | Phase I integrated datapath | Built + tested |
+| `control_unit` | FETCH → DECODE/EXECUTE → WRITEBACK FSM | Designed — Phase II |
 
 ### ALU operations
 
@@ -146,7 +148,7 @@ stateDiagram-v2
 
 ---
 
-## ✅ Phase I Results
+## Phase I Results
 
 ### Working example — `VADD v2, v0, v1` at LANES = 4
 
@@ -177,7 +179,7 @@ The simulation waveform is Fig. 2 in the [report](report/SIMD_VPU_Phase1_Report.
 
 ---
 
-## 🚀 Phase II Roadmap
+## Phase II Roadmap
 
 | Step | Goal | Output |
 |---|---|---|
@@ -192,7 +194,7 @@ The simulation waveform is Fig. 2 in the [report](report/SIMD_VPU_Phase1_Report.
 
 ---
 
-## 🛠️ How to Run
+## How to Run
 
 ### Prerequisites
 ```bash
@@ -246,7 +248,7 @@ Currently synthesizes `lane_alu`; the full `vpu_top` sweep is enabled in Phase I
 
 ---
 
-## 📁 Repository Layout
+## Repository Layout
 
 ```
 simd-vector-processing-unit/
@@ -262,7 +264,7 @@ simd-vector-processing-unit/
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 | Doc | Contents |
 |---|---|
