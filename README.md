@@ -1,185 +1,276 @@
 # SIMD Vector Processing Unit
 
-**Team:** LANE BREAKERS
-**Course:** Modern Computer Architecture — B.Tech CS & AI, Rishihood University / NST
-**Project:** #11 — SIMD Vector Processing Unit (Intermediate+, SIMD / Parallelism)
+**Project 11 · SIMD / Parallelism · Team LANE BREAKERS**
+Modern Computer Architecture — Newton School of Technology, Rishihood University
 
-
----
-
-## Video Link
-
-📹 **[Phase I Prototype Demo](https://drive.google.com/file/d/1J8yfL7EDzvQIP1-MFa14KIe3Ny5_jfE6/view?usp=sharing)**
-
+A parameterized **Single Instruction, Multiple Data (SIMD)** vector processing unit in synthesizable Verilog-2001. One instruction drives every lane, so a 4-lane build performs four 32-bit operations in a single clock cycle.
 
 ---
 
-## Team Members
+## 📦 Phase I Deliverables
 
-| Role | Name | Responsibility |
-|------|------|---------------|
-| Architecture Lead | Kasula Lalithendra | Repo skeleton, interfaces, demo top, Makefile, README |
-| Datapath RTL | Dhanvin Vadlamudi | lane_alu, lane_mux, lane_array, vreg_file, sreg_file, result_combiner |
-| Control & Memory | Jagruthi Pulumati | ISA doc, control FSM design, dmem, pc_imem |
-| Verification | Polana Rakshita | golden.py, all testbenches, verification strategy |
-| Report & Results | Chaitanya Sai Meka | IEEE report, Vivado synthesis TCL |
-
----
-
-## What This Project Is
-
-A parameterized **SIMD Vector Processing Unit** in synthesizable Verilog-2001. One instruction operates on all `LANES` data lanes in parallel (default: 4 lanes × 32 bits). Self-checking module and integration tests cover 203 RTL checks, alongside a Python golden reference model. A Vivado synthesis script for Artix-7 is ready; synthesis results are Phase II work.
-
-Key features:
-- Parameterized lane count: `LANES ∈ {1, 2, 4, 8}` (same RTL, no edits needed)
-- 9 vector ALU operations: VADD, VSUB, VAND, VOR, VXOR, VSLT, VEQ, VSLL, VSRL
-- Scalar-broadcast addressing (`.S` suffix): `vd[i] = vs1[i] op rs2`
-- 8 vector registers (`v0..v7`), 8 scalar registers (`r0..r7`, `r0 = 0`)
-- Harvard architecture: separate instruction and data memories
-- Self-checking module and integration tests with PASS/FAIL output
+| Deliverable | Link |
+|---|---|
+| 📄 IEEE Report (PDF) | [`report/SIMD_VPU_Phase1_Report.pdf`](report/SIMD_VPU_Phase1_Report.pdf) |
+| 🎥 Prototype Demo Video | [Phase I Prototype Demo (Google Drive)](https://drive.google.com/file/d/1J8yfL7EDzvQIP1-MFa14KIe3Ny5_jfE6/view?usp=sharing) |
+| 🧩 RTL Source | [`rtl/`](rtl/) |
+| ✅ Testbenches | [`tb/`](tb/) — 203 RTL checks, all passing |
+| 🐍 Golden Model | [`verif/golden.py`](verif/golden.py) |
+| 📐 Design Docs | [`docs/`](docs/) — spec, ISA, interfaces, control FSM, per-module docs |
+| ⚙️ Synthesis Script | [`synth/run_synth.tcl`](synth/run_synth.tcl) — Vivado, Artix-7 |
 
 ---
 
-## Repository Layout
+## 👥 Team
 
-```
-simd-vector-processing-unit/
-├── rtl/                   Synthesizable Verilog-2001 RTL
-│   ├── lane_alu.v         Single-lane 32-bit ALU (combinational)
-│   ├── lane_mux.v         Per-lane operand-B mux (vector or scalar broadcast)
-│   ├── lane_array.v       LANES parallel ALUs via generate loop
-│   ├── vreg_file.v        8 vector registers, async read, sync write
-│   ├── sreg_file.v        8 scalar registers, r0 = 0
-│   ├── result_combiner.v  ALU/load write-back mux
-│   ├── dmem.v             Wide-port data memory (LANES×32 bits)
-│   ├── pc_imem.v          Program counter and instruction memory
-│   └── vpu_demo_top.v     Phase I demo datapath (memories tested separately)
-├── tb/                    Self-checking testbenches (Icarus Verilog)
-│   ├── lane_alu_tb.v
-│   ├── lane_mux_tb.v
-│   ├── lane_array_tb.v    Parameterized — compile with -DLANES=1/4/8
-│   ├── vreg_file_tb.v
-│   ├── sreg_file_tb.v
-│   ├── result_combiner_tb.v
-│   ├── dmem_tb.v
-│   ├── pc_imem_tb.v
-│   └── vpu_demo_top_tb.v  Full demo datapath test + VCD waveform
-├── verif/
-│   └── golden.py          Python golden reference model for all ALU ops
-├── synth/
-│   └── run_synth.tcl      Vivado non-project-mode synthesis script
-├── docs/
-│   ├── SPEC.md            Full project specification
-│   ├── interfaces.md      Port contracts and bus layout (frozen)
-│   ├── block_diagram.md   Demo datapath Mermaid diagram
-│   ├── isa.md             Instruction encoding and opcode table
-│   ├── control_fsm.md     FSM state diagram and control decode table
-│   ├── decisions.md       Design decision log
-│   ├── verification.md    Verification strategy and test list
-│   └── <module>.md        One doc file per RTL module
-├── report/
-│   ├── main.tex           IEEE conference report (IEEEtran)
-│   ├── refs.bib           Bibliography (14 references)
-│   └── SIMD_VPU_Phase1_Report.pdf  Compiled Phase I report
-├── Makefile
-└── README.md
+| Member | Role | Phase I Work |
+|---|---|---|
+| **Dhanvin Vadlamudi** (Team Lead) | Datapath RTL | `lane_alu`, `lane_mux`, `lane_array`, `vreg_file`, `sreg_file`, `result_combiner` |
+| **Kasula Lalithendra** | Architecture & Integration | Spec, interfaces, block diagram, `vpu_demo_top`, Makefile |
+| **Jagruthi Pulumati** | Control & Memory | ISA, control FSM design, `dmem`, `pc_imem` + tests |
+| **Polana Rakshita** | Verification | `golden.py`, ALU / mux / lane-array / register-file testbenches, verification plan |
+| **Chaitanya Sai Meka** | Report & Synthesis | IEEE report, literature review, Vivado synthesis script |
+
+---
+
+## 💡 The Idea in One Picture
+
+A scalar processor needs one instruction per element. A SIMD processor applies one instruction to every lane at once.
+
+```mermaid
+flowchart LR
+    subgraph S["Scalar: 4 instructions, 4 steps"]
+        direction TB
+        s1["1 + 10 = 11"] --> s2["2 + 11 = 13"] --> s3["3 + 12 = 15"] --> s4["4 + 13 = 17"]
+    end
+    subgraph V["SIMD (LANES = 4): 1 instruction, 1 step"]
+        direction TB
+        I(["VADD v2, v0, v1"]) --> L0["lane 0: 1 + 10 = 11"]
+        I --> L1["lane 1: 2 + 11 = 13"]
+        I --> L2["lane 2: 3 + 12 = 15"]
+        I --> L3["lane 3: 4 + 13 = 17"]
+    end
 ```
 
 ---
 
-## Prerequisites
+## 🏗️ Architecture
 
+The VPU is a single-issue Harvard machine. Vector registers are flat `LANES × 32`-bit buses; lane *i* occupies bits `[i*32 +: 32]`. Changing the `LANES` parameter (1, 2, 4, 8) rescales the register file, lane array and memory width with no RTL edits.
+
+```mermaid
+flowchart LR
+    VRF["vreg_file<br/>8 × (LANES×32)<br/>2 read / 1 write"]
+    SRF["sreg_file<br/>8 × 32, r0 = 0"]
+
+    subgraph LA["lane_array (LANES copies, generate loop)"]
+        direction TB
+        M0["lane_mux 0"] --> A0["lane_alu 0"]
+        M1["lane_mux 1"] --> A1["lane_alu 1"]
+        M2["lane_mux 2"] --> A2["lane_alu 2"]
+        M3["lane_mux 3"] --> A3["lane_alu 3"]
+    end
+
+    RC["result_combiner<br/>ALU or load data"]
+    DM["dmem<br/>(Phase II hookup)"]
+    CU["control_unit<br/>(Phase II)"]
+    PC["pc_imem<br/>(Phase II hookup)"]
+
+    VRF -- "vs1, vs2" --> LA
+    SRF -- "scalar (broadcast)" --> LA
+    LA -- "alu_result" --> RC
+    DM -. "load data" .-> RC
+    RC -- "write-back to vd" --> VRF
+    PC -. "instruction" .-> CU
+    CU -. "alu_op, opb_sel, write enables" .-> LA
+
+    classDef future stroke-dasharray: 5 5;
+    class DM,CU,PC future
+```
+
+Solid paths are built and tested in Phase I. Dashed blocks are Phase II: `dmem` and `pc_imem` are implemented and unit-tested but not yet connected; the control unit is designed (see [`docs/control_fsm.md`](docs/control_fsm.md)). In Phase I the testbench drives the control signals through `vpu_demo_top`.
+
+### Modules
+
+| Module | Function | Status |
+|---|---|---|
+| `lane_alu` | Combinational 32-bit ALU, 9 operations via 4-bit `alu_op` | ✅ Built + tested |
+| `lane_mux` | Operand B: own `vs2` element, or scalar broadcast (`opb_sel`) | ✅ Built + tested |
+| `lane_array` | `generate` loop creating `LANES` mux + ALU pairs | ✅ Built + tested at 1/4/8 lanes |
+| `vreg_file` | 8 vector registers, async read, sync write | ✅ Built + tested |
+| `sreg_file` | 8 scalar registers, `r0` hard-wired to 0 | ✅ Built + tested |
+| `result_combiner` | Write-back select: ALU result or memory data | ✅ Built + tested |
+| `dmem` | One `LANES×32`-bit vector per address | ✅ Built + tested (standalone) |
+| `pc_imem` | Program counter with branch + instruction memory | ✅ Built + tested (standalone) |
+| `vpu_demo_top` | Phase I integrated datapath | ✅ Built + tested |
+| `control_unit` | FETCH → DECODE/EXECUTE → WRITEBACK FSM | 📝 Designed — Phase II |
+
+### ALU operations
+
+| `alu_op` | Op | Per lane |
+|---|---|---|
+| 0 | VADD | `a + b` (32-bit wrap-around) |
+| 1 | VSUB | `a - b` |
+| 2 | VAND | `a & b` |
+| 3 | VOR | `a \| b` |
+| 4 | VXOR | `a ^ b` |
+| 5 | VSLT | `signed(a) < signed(b) ? 1 : 0` |
+| 6 | VEQ | `a == b ? 1 : 0` |
+| 7 | VSLL | `a << b[4:0]` |
+| 8 | VSRL | `a >> b[4:0]` (logical) |
+
+Setting `opb_sel = 1` broadcasts one scalar register to every lane: `VADD.S vd, vs1, rs2` → `vd[i] = vs1[i] + rs2`.
+
+### Instruction format (32-bit)
+
+```
+ 31      26 25   23 22   20 19   17  16  15              0
+┌──────────┬───────┬───────┬───────┬────┬────────────────┐
+│  opcode  │  vd   │  vs1  │  vs2  │opb │ imm / offset   │
+│  [5:0]   │ [2:0] │ [2:0] │ [2:0] │sel │    [15:0]      │
+└──────────┴───────┴───────┴───────┴────┴────────────────┘
+```
+Vector ALU ops, `VLD`/`VST`, scalar `SADDI`/`SLI`, `BNE`, `HALT`. Full table: [`docs/isa.md`](docs/isa.md).
+
+### Control FSM (Phase II design)
+
+```mermaid
+stateDiagram-v2
+    [*] --> FETCH
+    FETCH --> DECODE_EX : Instruction available
+    DECODE_EX --> WRITEBACK : Vector ALU, VLD, scalar ALU
+    DECODE_EX --> FETCH : VST or BNE
+    DECODE_EX --> DECODE_EX : HALT or halted
+    WRITEBACK --> FETCH : Write-back complete
+```
+
+---
+
+## ✅ Phase I Results
+
+### Working example — `VADD v2, v0, v1` at LANES = 4
+
+```
+  v0 = [ 1,  2,  3,  4]     lanes 0..3
+  v1 = [10, 11, 12, 13]
+       ────────────────
+  v2 = [11, 13, 15, 17]     all four lanes written on ONE clock edge (35 ns)
+```
+
+The simulation waveform is Fig. 2 in the [report](report/SIMD_VPU_Phase1_Report.pdf).
+
+### Verification — `make test`
+
+| Testbench | Scope | Checks |
+|---|---|---|
+| `golden.py` | Golden-model self-test | PASS |
+| `lane_alu_tb` | 9 ops + edge cases (0, −1, INT_MIN/MAX, overflow, shifts 0/31) | 37 |
+| `lane_mux_tb` | Vector vs. scalar select | 9 |
+| `lane_array_tb` | LANES = 1 / 4 / 8, lane independence, scalar broadcast | 7 / 26 / 50 |
+| `vreg_file_tb` | All 8 registers, 2 read ports | 17 |
+| `sreg_file_tb` | `r0 = 0` invariant | 14 |
+| `result_combiner_tb` | ALU vs. load select | 2 |
+| `dmem_tb` | Lane-group read / write | 9 |
+| `pc_imem_tb` | Reset, increment, branch | 12 |
+| `vpu_demo_top_tb` | Integrated datapath: VADD, VSUB, VAND, VSLT, overflow | 20 |
+| **Total** | **11 RTL testbench runs** | **203 — all PASS** |
+
+---
+
+## 🚀 Phase II Roadmap
+
+| Step | Goal | Output |
+|---|---|---|
+| 1 | Implement `control_unit` from the FSM design | RTL + testbench |
+| 2 | Build `vpu_top`: control + `pc_imem` + `dmem` + datapath | Processor runs stored programs |
+| 3 | Assembler and benchmark programs | B1 `C[i]=A[i]+B[i]`, B2 threshold/clamp, B3 bitwise mix |
+| 4 | Check every benchmark against `golden.py` at LANES = 1, 2, 4, 8 | System tests |
+| 5 | Count cycles, compute speedup vs. LANES = 1 | Speedup table + analysis (Amdahl's law) |
+| 6 | Vivado synthesis sweep on Artix-7 (`xc7a35tcpg236-1`) | LUTs, FFs, Fmax per lane count |
+| 7 | Final IEEE report with Results & Discussion and Conclusion | Phase II report |
+| Stretch | `VMUL` on DSP48 slices, cross-lane reduction | — |
+
+---
+
+## 🛠️ How to Run
+
+### Prerequisites
 ```bash
-# macOS (Homebrew)
-brew install icarus-verilog gtkwave python3
-
+# macOS
+brew install icarus-verilog python3
 # Ubuntu / Debian
-sudo apt install iverilog gtkwave python3
-
-# Verify
-iverilog -V
-vvp -V
-python3 --version
+sudo apt install iverilog python3
 ```
-
----
-
-## How to Run
+Optional waveform viewer: GTKWave or Surfer.
 
 ### Run all tests
 ```bash
 make test
 ```
-A passing run prints a PASS summary for each testbench. A failed check makes the simulator and `make test` exit with a nonzero status.
+Each testbench prints a PASS summary. Any failed check makes `make test` exit with a nonzero status.
 
-### Run a specific testbench manually
+### Run one testbench
 ```bash
 # lane_alu
 iverilog -o /tmp/la.vvp tb/lane_alu_tb.v rtl/lane_alu.v && vvp /tmp/la.vvp
 
-# lane_array at different lane counts
+# lane_array at 1, 4, 8 lanes
 for L in 1 4 8; do
   iverilog -DLANES=$L -o /tmp/lar_L$L.vvp \
     tb/lane_array_tb.v rtl/lane_array.v rtl/lane_alu.v rtl/lane_mux.v
   vvp /tmp/lar_L$L.vvp
 done
 
-# demo top
+# integrated demo datapath
 iverilog -s vpu_demo_top_tb -DLANES=4 -o /tmp/demo.vvp tb/vpu_demo_top_tb.v rtl/*.v && vvp /tmp/demo.vvp
 ```
 
-### Generate waveform (GTKWave)
+### Waveform
 ```bash
 make wave
 ```
-This dumps a VCD to `docs/vpu_demo_vadd_L4.vcd` and opens GTKWave.
+Writes `docs/vpu_demo_vadd_L4.vcd` and opens a waveform viewer.
 
-### Run the Python golden model
+### Golden model
 ```bash
-# Self-test the golden model
-python3 verif/golden.py --self-test
-
-# Generate B1 hex files for LANES=4, N=64
-python3 verif/golden.py --bench B1 --lanes 4 --n 64
-
-# Generate all benchmarks at all lane counts
-python3 verif/golden.py --all
+python3 verif/golden.py --self-test                    # self-test
+python3 verif/golden.py --bench B1 --lanes 4 --n 64    # one benchmark
+python3 verif/golden.py --all                          # all benchmarks, all lane counts
 ```
 
 ### Synthesis (requires Vivado)
 ```bash
 vivado -mode batch -source synth/run_synth.tcl
-# Reports written to synth/reports/
+```
+Currently synthesizes `lane_alu`; the full `vpu_top` sweep is enabled in Phase II.
+
+---
+
+## 📁 Repository Layout
+
+```
+simd-vector-processing-unit/
+├── rtl/        Synthesizable Verilog-2001 (9 modules)
+├── tb/         Self-checking testbenches (Icarus Verilog)
+├── verif/      golden.py — Python reference model + benchmark data generator
+├── synth/      run_synth.tcl — Vivado non-project-mode script (Artix-7)
+├── docs/       SPEC, ISA, interfaces, control FSM, decisions, verification, per-module docs
+├── report/     IEEE report (main.tex, refs.bib, compiled PDF, waveform figure)
+├── Makefile    make test · make wave
+└── README.md
 ```
 
 ---
 
-## Demo Datapath (Phase I)
+## 📚 Documentation
 
-The Phase I demo (`vpu_demo_top.v`) shows the core SIMD operation:
-
-1. Testbench loads two vectors into `v0` and `v1` via `load_we`
-2. Issues `VADD v2, v0, v1` — `alu_op=4'h0`, `vreg_we=1`
-3. All 4 (or 8) lane ALUs compute simultaneously in one clock cycle
-4. Result is written back to `v2` and read out via `result_out`
-
-```
-  v0 = [1,  2,  3,  4 ]   (lanes 0–3)
-  v1 = [10, 11, 12, 13]
-       ─────────────────
-  v2 = [11, 13, 15, 17]   ← computed in ONE cycle
-```
-
-
-
-## (Phase I Checklist)
-
-- [x] `make test` prints PASS for all unit tests and demo datapath
-- [x] Block diagram in `docs/block_diagram.md`
-- [x] Every module has a `docs/<module>.md`
-- [x] Report builds with all required sections (`report/main.tex`)
-- [x] README has project idea, team names, how to run, video link placeholder
-- [x] Waveform screenshot of 4-lane VADD saved to `docs/` (run `make wave`)
-- [x] Individual Contributions filled in the report
-- [x] Video link updated after recording
-
+| Doc | Contents |
+|---|---|
+| [`docs/SPEC.md`](docs/SPEC.md) | Full project specification and phase plan |
+| [`docs/isa.md`](docs/isa.md) | Instruction encoding and opcode table |
+| [`docs/interfaces.md`](docs/interfaces.md) | Port contracts and bus layout |
+| [`docs/block_diagram.md`](docs/block_diagram.md) | Demo datapath and signal flow |
+| [`docs/control_fsm.md`](docs/control_fsm.md) | Controller state diagram and decode table |
+| [`docs/decisions.md`](docs/decisions.md) | Design decision log |
+| [`docs/verification.md`](docs/verification.md) | Verification strategy and test list |
+| `docs/<module>.md` | One document per RTL module |
