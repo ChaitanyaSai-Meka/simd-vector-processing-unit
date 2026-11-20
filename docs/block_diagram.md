@@ -1,4 +1,55 @@
-# Block Diagram — SIMD VPU Demo Datapath
+# SIMD VPU Block Diagrams
+
+## Phase II integrated core
+
+The controller sequences instruction fetch, execution, and write-back. The
+memory and ALU share a full-width vector write-back path.
+
+```mermaid
+flowchart LR
+    PC["pc_imem"]
+    CTRL["control_unit"]
+    SRF["sreg_file"]
+    VRF["vreg_file"]
+    DMEM["dmem"]
+    SELECT["result_combiner"]
+    WB["Vector write-back register"]
+    DEBUG["Top-level debug outputs"]
+
+    subgraph LANES["lane_array (LANES lanes)"]
+        MUX["lane_mux per lane"] -->|"operand B"| ALU["lane_alu per lane"]
+    end
+
+    PC -->|"pc, instr"| CTRL
+    CTRL -. "pc_en, branch_en, branch_target" .-> PC
+    PC -->|"pc"| DEBUG
+    CTRL -->|"halted, cycle_count, instr_count"| DEBUG
+
+    CTRL -->|"scalar write value, addresses, enable"| SRF
+    SRF -->|"rs1 and rs2 values"| CTRL
+    SRF -->|"rs2 broadcast"| MUX
+    CTRL -. "opb_sel" .-> MUX
+    CTRL -. "alu_op" .-> ALU
+
+    CTRL -. "vector addresses, vreg_we" .-> VRF
+    VRF -->|"vs1 per lane"| ALU
+    VRF -->|"vs2 per lane"| MUX
+    VRF -->|"vs1 store data"| DMEM
+    CTRL -. "dmem_addr, dmem_we" .-> DMEM
+
+    ALU -->|"ALU result"| SELECT
+    DMEM -->|"load data"| SELECT
+    CTRL -. "res_sel" .-> SELECT
+    SELECT -->|"selected vector"| WB
+    CTRL -. "pc_en at execute edge" .-> WB
+    WB -->|"vector write data"| VRF
+```
+
+All sequential blocks use the same clock. Reset returns the PC and controller
+to their initial state. See the [integration notes](vpu_top.md) for timing and
+memory setup.
+
+## Phase I demo datapath
 
 **Module:** `vpu_demo_top.v`
 **Owner:** Kasula Lalithendra (Role 1)
@@ -7,7 +58,7 @@ This is the Phase I demo datapath. The testbench loads two vectors into `vreg_fi
 
 ---
 
-## Mermaid Block Diagram
+### Mermaid Block Diagram
 
 ```mermaid
 flowchart LR
@@ -48,7 +99,7 @@ flowchart LR
 
 ---
 
-## Signal Flow (one VADD operation, LANES=4)
+### Signal Flow (one VADD operation, LANES=4)
 
 | Cycle | What happens |
 |-------|-------------|
@@ -61,7 +112,7 @@ One clock cycle per operation: execute and writeback happen in the **same cycle*
 
 ---
 
-## Demo Datapath Connections (text schematic)
+### Demo Datapath Connections (text schematic)
 
 ```
                         ┌──────────────────────────────────────────────┐
@@ -92,7 +143,7 @@ One clock cycle per operation: execute and writeback happen in the **same cycle*
 
 ---
 
-## Module List (Phase I)
+### Module List (Phase I)
 
 | Module | File | Instantiates |
 |--------|------|-------------|

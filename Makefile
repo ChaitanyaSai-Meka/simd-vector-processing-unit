@@ -3,6 +3,7 @@
 #
 # Targets:
 #   make test   – compile and run every testbench; print PASS/FAIL per test
+#   make smoke  – run the Phase II five-instruction smoke test
 #   make wave   – run vpu_demo_top_tb at LANES=4, dump VCD, open GTKWave
 #   make clean  – remove compiled artefacts
 
@@ -26,12 +27,14 @@ RTL_SRCS = $(RTL)/lane_alu.v \
            $(RTL)/result_combiner.v \
            $(RTL)/dmem.v \
            $(RTL)/pc_imem.v \
-           $(RTL)/vpu_demo_top.v
+           $(RTL)/vpu_demo_top.v \
+           $(RTL)/control_unit.v \
+           $(RTL)/vpu_top.v
 
 BUILD_DIR = /tmp/vpu_build
 VCD_FILE  = docs/vpu_demo_vadd_L4.vcd
 
-.PHONY: test wave clean golden_self_test
+.PHONY: test smoke wave clean golden_self_test
 
 # ── test: run all testbenches ─────────────────────────────────────────────────
 test: golden_self_test
@@ -53,10 +56,18 @@ test: golden_self_test
 	@$(MAKE) _run_tb TB_SRC=$(TB)/dmem_tb.v        TB_NAME=dmem_tb        EXTRA_SRC="$(RTL)/dmem.v"
 	@$(MAKE) _run_tb TB_SRC=$(TB)/pc_imem_tb.v     TB_NAME=pc_imem_tb     EXTRA_SRC="$(RTL)/pc_imem.v"
 	@$(MAKE) _run_demo_tb
+	@$(MAKE) smoke
 	@echo ""
 	@echo "========================================"
 	@echo " Test run complete."
 	@echo "========================================"
+
+# ── smoke: run the Phase II integration test ───────────────────────────────────
+smoke:
+	@mkdir -p $(BUILD_DIR)
+	@$(IVERILOG) -g2001 -Wall -s vpu_top_smoke_tb -Pvpu_top_smoke_tb.LANES=$(LANES) \
+	    -o $(BUILD_DIR)/vpu_top_smoke_L$(LANES).vvp $(TB)/vpu_top_smoke_tb.v $(RTL_SRCS)
+	@$(VVP) $(BUILD_DIR)/vpu_top_smoke_L$(LANES).vvp
 
 # ── internal: compile + run a single tb against one RTL file ─────────────────
 _run_tb:
