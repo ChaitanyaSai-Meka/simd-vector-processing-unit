@@ -13,8 +13,8 @@
 - **`mem_rdata`** — data loaded from `dmem` (for the VLD instruction)
 
 The `res_sel` control signal (driven by `control_unit`) makes the selection:
-- `res_sel = 0` → write ALU result
-- `res_sel = 1` → write memory load data
+- `res_sel = 0` selects the ALU result
+- `res_sel = 1` selects the memory load data
 
 ## Why it is built this way
 
@@ -22,7 +22,7 @@ Both the ALU and the data memory produce results that need to go into a vector r
 
 ## Timing
 
-Purely combinational. `wb_data` is valid the same cycle as `alu_result`, `mem_rdata`, and `res_sel`.
+Purely combinational. `wb_data` is valid the same cycle as `alu_result`, `mem_rdata`, and `res_sel`. The integrated top can capture the selected bus at the end of DECODE/EXECUTE and commit it when `vreg_we` is high in WRITEBACK. See the [control-unit wiring notes](control_unit.md#wiring-for-the-integrated-top).
 
 ## Worked example: VLD instruction
 
@@ -30,3 +30,5 @@ Purely combinational. `wb_data` is valid the same cycle as `alu_result`, `mem_rd
 - `alu_result` = whatever the ALU computed (irrelevant)
 - `res_sel = 1` (control unit sets this for VLD)
 - `wb_data = {0xAABBCCDD, 0x11223344, 0x55667788, 0x99AABBCC}` → written to `vreg_file`
+
+The [datapath sweep](lane_array.md#datapath-width-sweep) verifies the load and ALU paths with real data memory and vector registers at all four supported lane counts.
