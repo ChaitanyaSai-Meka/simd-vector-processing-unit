@@ -28,6 +28,20 @@ The VPU uses 32-bit fixed-width instructions. All vector instructions operate la
 - **`opb_sel [16]`** — `0` = use `vs2` (vector lane data), `1` = broadcast `rs2` (scalar `.S` form)
 - **`imm/offset [15:0]`** — sign-extended immediate or PC-relative offset
 
+| Form | `[25:23]` | `[22:20]` | `[19:17]` | `[16]` | `[15:0]` |
+| --- | --- | --- | --- | --- | --- |
+| Vector ALU | `vd` | `vs1` | `vs2` or `rs2` | `.S` select | — |
+| VLD | `vd` | `rs1` (base) | — | — | Signed lane-group offset |
+| VST | `vs1` (store data) | `rs1` (base) | — | — | Signed lane-group offset |
+| SADDI | `rd` | `rs1` | — | — | Signed immediate |
+| SLI | `rd` | — | — | — | Signed immediate |
+| BNE | — | `rs1` | `rs2` | — | Signed PC-relative offset in instructions |
+| HALT | — | — | — | — | — |
+
+A dash marks an ignored field. Encode ignored fields as zero. VST uses the
+`[25:23]` field for store data so that it can share the scalar base field with
+VLD. Memory and branch addresses are 32-bit sums.
+
 ---
 
 ## Opcode Table
@@ -53,7 +67,7 @@ The VPU uses 32-bit fixed-width instructions. All vector instructions operate la
 
 ### Scalar-operand form (`.S` suffix)
 
-Setting `opb_sel` (bit 16) on any Vector ALU instruction makes `lane_mux` broadcast scalar register `rs2` to all lanes as operand B:
+Setting `opb_sel` (bit 16) on VADD through VSRL makes `lane_mux` broadcast scalar register `rs2` to all lanes as operand B:
 
 ```
 VADD.S  vd, vs1, rs2   →  vd[i] = vs1[i] + rs2   (same scalar for all lanes)
@@ -74,8 +88,12 @@ The FSM has 3 states: **FETCH → DECODE/EXECUTE → WRITEBACK**.
 | Scalar ALU (SADDI, SLI) | 3 | Fetch instr | Compute result | Write rd |
 | Branch (BNE) | 2 | Fetch instr | Compare rs1 and rs2, update PC | — |
 | HALT | 2 | Fetch instr | Latch halted and hold the PC at HALT | — |
+| Reserved opcode (including VMUL until implemented) | 2 | Fetch instr | Advance PC without writing registers or memory | — |
 
-> VST and BNE return directly to FETCH after DECODE/EXECUTE. HALT holds the controller in DECODE/EXECUTE until reset. See [Control FSM](control_fsm.md) for PC enables and counter timing.
+VST, BNE, and reserved opcodes return directly to FETCH after DECODE/EXECUTE.
+HALT holds the controller in DECODE/EXECUTE until reset. `instr_count` counts
+completed instructions, including reserved opcodes and HALT. See
+[Control FSM](control_fsm.md) for PC enables and counter timing.
 
 ---
 
@@ -92,7 +110,9 @@ BNE   rs1, rs2, label    # branch if not equal (PC-relative)
 HALT                     # stop
 ```
 
-Loop addresses increment by 1 lane-group per iteration. Each lane-group contains `LANES` 32-bit elements:
+Each data-memory address selects one group of `LANES` 32-bit elements.
+A contiguous loop advances by one group per iteration. This example packs
+A, B, and C consecutively in memory, each occupying `N/LANES` groups.
 
 ```asm
 # B1 benchmark loop for LANES=4, N=64 (16 iterations)
@@ -100,9 +120,9 @@ Loop addresses increment by 1 lane-group per iteration. Each lane-group contains
     SLI   r2, 16         # loop limit = N/LANES
 loop:
     VLD   v0, 0(r1)      # load A[i*LANES .. i*LANES+LANES-1]
-    VLD   v1, 64(r1)     # load B (offset by 64 groups = 256 words)
+    VLD   v1, 16(r1)     # load B, starting at group 16
     VADD  v2, v0, v1     # C[i] = A[i] + B[i] for all lanes
-    VST   v2, 128(r1)    # store C
+    VST   v2, 32(r1)     # store C, starting at group 32
     SADDI r1, r1, 1      # i++
     BNE   r1, r2, loop
     HALT
