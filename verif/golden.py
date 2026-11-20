@@ -14,7 +14,6 @@ Usage:
 import argparse
 import random
 import os
-import struct
 
 # ── constants ────────────────────────────────────────────────────────────────
 MASK32 = 0xFFFFFFFF
@@ -85,7 +84,7 @@ def write_hex(filename, data, lanes, dw=32):
     hex value with lane 0 in the least significant bits (rightmost digits).
     At one lane, both singleton groups and flat lists of words are accepted.
     """
-    os.makedirs(os.path.dirname(filename) if os.path.dirname(filename) else '.', exist_ok=True)
+    os.makedirs(os.path.dirname(filename) or '.', exist_ok=True)
     with open(filename, 'w') as f:
         if lanes == 1:
             for word in data:
@@ -110,57 +109,73 @@ def read_hex_flat(filename):
 
 
 # ── benchmark data generation ─────────────────────────────────────────────────
-def gen_b1(lanes, n, seed=42, outdir='verif/data'):
-    """B1: C[i] = A[i] + B[i]. Generates A.hex, B.hex, C_expected.hex."""
-    random.seed(seed)
-    ngroups = n // lanes
-    A = [[random.randint(0, MASK32) for _ in range(lanes)] for _ in range(ngroups)]
-    B = [[random.randint(0, MASK32) for _ in range(lanes)] for _ in range(ngroups)]
-    C = [[vadd(a, b) for a, b in zip(ag, bg)] for ag, bg in zip(A, B)]
+def group_count(lanes, n):
+    if lanes not in (1, 2, 4, 8):
+        raise ValueError("lanes must be 1, 2, 4 or 8")
+    if n <= 0 or n % lanes:
+        raise ValueError("the element count must be positive and divisible by LANES")
+    return n // lanes
 
-    write_hex(f'{outdir}/b1_A_L{lanes}.hex', A, lanes)
-    write_hex(f'{outdir}/b1_B_L{lanes}.hex', B, lanes)
-    write_hex(f'{outdir}/b1_C_expected_L{lanes}.hex', C, lanes)
-    print(f'B1 L={lanes} N={n}: wrote b1_A, b1_B, b1_C_expected')
-    return A, B, C
+
+def random_groups(rng, count, lanes):
+    return [[rng.randint(0, MASK32) for _ in range(lanes)] for _ in range(count)]
+
+
+def write_benchmark_images(name, lanes, n, outdir, a, second, expected):
+    """Store A, the second region, and zero-filled C in one DMEM image."""
+    blank = [[0] * lanes for _ in a]
+    prefix = os.path.join(outdir, name.lower())
+    write_hex(f'{prefix}_A_L{lanes}.hex', a, lanes)
+    if second is not None:
+        write_hex(f'{prefix}_B_L{lanes}.hex', second, lanes)
+    write_hex(f'{prefix}_dmem_L{lanes}.hex', a + (blank if second is None else second) + blank, lanes)
+    write_hex(f'{prefix}_C_expected_L{lanes}.hex', expected, lanes)
+    print(f'{name} L={lanes} N={n}: wrote memory image and reference hex')
+
+
+def gen_b1(lanes, n, seed=42, outdir='verif/data'):
+    """C[i] = A[i] + B[i] with 32-bit wraparound."""
+    count = group_count(lanes, n)
+    rng = random.Random(seed)
+    a = random_groups(rng, count, lanes)
+    b = random_groups(rng, count, lanes)
+    c = [apply_op_vector(vadd, av, bv) for av, bv in zip(a, b)]
+    write_benchmark_images('B1', lanes, n, outdir, a, b, c)
+    return a, b, c
+
+
+def clamp_signed(a, threshold):
+    """Return the smaller signed 32-bit operand as a 32-bit word."""
+    if to_signed32(a) < to_signed32(threshold):
+        return a & MASK32
+    return threshold & MASK32
 
 
 def gen_b2(lanes, n, threshold=0x00001000, seed=42, outdir='verif/data'):
-    """B2: C[i] = (A[i] < T) ? A[i] : T  (unsigned comparison via VSLT trick)."""
-    random.seed(seed + 1)
-    ngroups = n // lanes
-    T = threshold
-    A = [[random.randint(0, MASK32) for _ in range(lanes)] for _ in range(ngroups)]
-
-    def clamp(a, t):
-        # Using signed VSLT: if signed(a) < signed(T) → keep A, else T
-        return a if to_signed32(a) < to_signed32(t) else t
-
-    C = [[clamp(a, T) for a in group] for group in A]
-    T_flat = [[T] * lanes for _ in range(ngroups)]
-
-    write_hex(f'{outdir}/b2_A_L{lanes}.hex', A, lanes)
-    write_hex(f'{outdir}/b2_T_L{lanes}.hex', T_flat, lanes)
-    write_hex(f'{outdir}/b2_C_expected_L{lanes}.hex', C, lanes)
-    print(f'B2 L={lanes} N={n}: wrote b2_A, b2_T, b2_C_expected')
-    return A, C
+    """C[i] = min_signed(A[i], T) with directed inputs around T."""
+    count = group_count(lanes, n)
+    rng = random.Random(seed + 1)
+    a = random_groups(rng, count, lanes)
+    boundary = (0x80000000, MASK32, threshold - 1, threshold, threshold + 1, 0x7fffffff)
+    for index, value in enumerate(boundary[:n]):
+        a[index // lanes][index % lanes] = value & MASK32
+    c = [[clamp_signed(word, threshold) for word in group] for group in a]
+    write_benchmark_images('B2', lanes, n, outdir, a, None, c)
+    threshold_groups = [[threshold] * lanes for _ in range(count)]
+    write_hex(os.path.join(outdir, f'b2_T_L{lanes}.hex'), threshold_groups, lanes)
+    return a, c
 
 
 def gen_b3(lanes, n, mask=0xFFFF0000, seed=42, outdir='verif/data'):
-    """B3: C[i] = (A[i] & M) ^ (B[i] << 2)."""
-    random.seed(seed + 2)
-    ngroups = n // lanes
-    M = mask
-    A = [[random.randint(0, MASK32) for _ in range(lanes)] for _ in range(ngroups)]
-    B = [[random.randint(0, MASK32) for _ in range(lanes)] for _ in range(ngroups)]
-    C = [[vxor(vand(a, M), vsll(b, 2)) for a, b in zip(ag, bg)]
-         for ag, bg in zip(A, B)]
-
-    write_hex(f'{outdir}/b3_A_L{lanes}.hex', A, lanes)
-    write_hex(f'{outdir}/b3_B_L{lanes}.hex', B, lanes)
-    write_hex(f'{outdir}/b3_C_expected_L{lanes}.hex', C, lanes)
-    print(f'B3 L={lanes} N={n}: wrote b3_A, b3_B, b3_C_expected')
-    return A, B, C
+    """C[i] = (A[i] & M) ^ (B[i] << 2) with 32-bit wraparound."""
+    count = group_count(lanes, n)
+    rng = random.Random(seed + 2)
+    a = random_groups(rng, count, lanes)
+    b = random_groups(rng, count, lanes)
+    c = [[((lhs & mask) ^ (rhs << 2)) & MASK32 for lhs, rhs in zip(av, bv)]
+         for av, bv in zip(a, b)]
+    write_benchmark_images('B3', lanes, n, outdir, a, b, c)
+    return a, b, c
 
 
 # ── self-test for golden model ────────────────────────────────────────────────
@@ -207,6 +222,12 @@ def self_test():
     # Edge: shift uses only low 5 bits of b
     chk(vsll(1, 32), 1, 'VSLL by 32 (mod 32 = 0)')
 
+    # B2 reference exercises signed values and equality at the threshold.
+    chk(clamp_signed(0x80000000, 4096), 0x80000000, 'B2 negative input')
+    chk(clamp_signed(4095, 4096), 4095, 'B2 below threshold')
+    chk(clamp_signed(4096, 4096), 4096, 'B2 at threshold')
+    chk(clamp_signed(4097, 4096), 4096, 'B2 above threshold')
+
     if errors == 0:
         print('PASS  golden.py self-test: all checks passed')
     else:
@@ -230,26 +251,33 @@ def main():
         ok = self_test()
         raise SystemExit(0 if ok else 1)
 
+    generators = {'B1': gen_b1, 'B2': gen_b2, 'B3': gen_b3}
     if args.all or args.bench == 'all':
-        for l in [1, 2, 4, 8]:
-            gen_b1(l, args.n, outdir=args.outdir)
-            gen_b2(l, args.n, outdir=args.outdir)
-            gen_b3(l, args.n, outdir=args.outdir)
-        return
+        lane_counts = (1, 2, 4, 8)
+        benchmarks = generators.values()
+    elif args.bench:
+        lane_counts = (args.lanes,)
+        benchmarks = (generators[args.bench],)
+    else:
+        lane_counts = ()
+        benchmarks = ()
 
-    if args.bench == 'B1':
-        gen_b1(args.lanes, args.n, outdir=args.outdir)
-    elif args.bench == 'B2':
-        gen_b2(args.lanes, args.n, outdir=args.outdir)
-    elif args.bench == 'B3':
-        gen_b3(args.lanes, args.n, outdir=args.outdir)
+    try:
+        for lanes in lane_counts:
+            group_count(lanes, args.n)
+        for lanes in lane_counts:
+            for generate in benchmarks:
+                generate(lanes, args.n, outdir=args.outdir)
+    except (OSError, ValueError) as exc:
+        parser.error(str(exc))
+    if args.all or args.bench == 'all':
+        return
 
     if args.op:
         op_fn = ALU_OPS[args.op]
-        import random
-        random.seed(0)
-        A = [random.randint(0, MASK32) for _ in range(args.lanes)]
-        B = [random.randint(0, MASK32) for _ in range(args.lanes)]
+        rng = random.Random(0)
+        A = [rng.randint(0, MASK32) for _ in range(args.lanes)]
+        B = [rng.randint(0, MASK32) for _ in range(args.lanes)]
         C = apply_op_vector(op_fn, A, B)
         print(f'{args.op} demo, LANES={args.lanes}:')
         for i in range(args.lanes):

@@ -15,7 +15,9 @@ Verification of the SIMD VPU follows a **golden-model-first** strategy. The Pyth
 
 | File | Purpose |
 |------|---------|
-| `verif/golden.py` | Python reference for all 9 ALU ops and all 3 benchmarks. Generates `verif/data/*.hex`. |
+| `verif/golden.py` | Python reference for the base ALU ops and three benchmarks. Generates data-memory and expected-output hex. |
+| `verif/asm.py` | Two-pass assembler. Generates instruction-memory hex from a `.s` file. |
+| `verif/programs/b1.s`, `b2.s`, `b3.s` | Benchmark sources shared across all four lane counts. |
 | `tb/lane_alu_tb.v` | Unit test for `lane_alu`: every opcode, all edge cases |
 | `tb/lane_mux_tb.v` | Unit test for `lane_mux`: opb_sel=0/1, dynamic switching |
 | `tb/vreg_file_tb.v` | Unit test for `vreg_file`: all 8 regs, both ports, sync/async timing |
@@ -101,6 +103,69 @@ iverilog -o /tmp/dmem_tb.vvp tb/dmem_tb.v rtl/dmem.v && vvp /tmp/dmem_tb.vvp
 # pc_imem
 iverilog -o /tmp/pci_tb.vvp tb/pc_imem_tb.v rtl/pc_imem.v && vvp /tmp/pci_tb.vvp
 ```
+
+---
+
+## Phase II benchmark fixtures
+
+Each benchmark uses the same 64 input elements at `LANES=1,2,4,8`. Regenerate
+the fixtures from the repository root with Python 3:
+
+```sh
+python3 verif/golden.py --all
+for lanes in 1 2 4 8; do
+    for bench in b1 b2 b3; do
+        python3 verif/asm.py "verif/programs/${bench}.s" --lanes "$lanes" \
+            -o "verif/data/${bench}_imem_L${lanes}.hex"
+    done
+done
+```
+
+For one case, use `golden.py --bench B1 --lanes 4` and assemble `b1.s` at
+the same width. Both scripts accept `--n` for a positive element count divisible
+by `LANES`. Ensure that the resulting addresses fit the configured data memory.
+
+### Assembler
+
+The assembler reads the [base ISA](isa.md), accepts case-insensitive mnemonics
+and register names, and writes one eight-digit hex word per instruction. Use
+`#` or `;` for comments. A label can stand alone or precede an instruction.
+`BNE` uses the address of its own instruction as the base for a label offset
+and also accepts an explicit signed displacement. For example, a branch at
+instruction 7 to a label at instruction 2 encodes `-5` as `fffb`. Numeric
+immediates accept values from `-32768` to `32767` in decimal or prefixed
+notation such as `-0x20`. The `.S` suffix requires a scalar last operand and
+sets bit 16. The optional VMUL opcode is reserved.
+
+`LANES`, `N`, `GROUPS`, `B_BASE`, and `C_BASE` are built-in constants.
+`GROUPS = N / LANES`, `B_BASE = GROUPS`, and `C_BASE = 2 * GROUPS`. A
+data-memory address selects an entire lane group, so the loop advances by one
+address per iteration. The loop bound and region offsets change with the lane
+count. For example, at four lanes, B1 processes 16 groups and loads B at
+`16(r1)` and stores C at `32(r1)`.
+
+### Data and expected output
+
+For each `<bench>` and lane count `<L>`, the testbench can load
+`<bench>_imem_L<L>.hex` at instruction address 0 and
+`<bench>_dmem_L<L>.hex` at data address 0. The data image contains
+`3 * GROUPS` lines in order:
+
+| Group addresses | Contents |
+| --- | --- |
+| `0` through `GROUPS - 1` | Input A |
+| `GROUPS` through `2 * GROUPS - 1` | Input B for B1 and B3, zero padding for B2 |
+| `2 * GROUPS` through `3 * GROUPS - 1` | Initially zero output region C |
+
+Each line packs `LANES` 32-bit words with lane 0 at the least-significant end
+of the hex value. After HALT, compare the C region in order against the
+`GROUPS` lines of `<bench>_C_expected_L<L>.hex`. Separate A and B inputs are
+also generated. B2 retains a separate threshold image for verification. Its
+program gets the threshold from a scalar register.
+
+- **B1** adds A and B with 32-bit wraparound.
+- **B2** computes the signed minimum of A and `4096`. It turns the 0-or-1 result of `VSLT.S` into a mask with `0 - cmp` and blends A and T. The golden input includes `INT_MIN`, `-1`, the three values around the cutoff, and `INT_MAX`.
+- **B3** computes `(A & 0xffff0000) ^ (B << 2)` with 32-bit truncation. The program builds the mask before the loop and broadcasts the shift count with `VSLL.S`.
 
 ---
 
