@@ -65,22 +65,76 @@ against the same core at one lane. Fixed instruction costs account for
 the departure from ideal scaling in these simulations.
 \end{abstract}
 
+\begin{IEEEkeywords}
+SIMD, vector processor, data-level parallelism, Verilog, cycle-count
+evaluation, hardware verification
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+Image filtering, signal processing, and machine-learning inference apply the
+same operation to many independent data elements. A SIMD processor exploits
+this data-level parallelism by fetching and decoding one instruction and
+applying it to several elements at once, so the control cost is shared across
+lanes~\cite{flynn1966very,hennessy2017computer}.
+
+This project builds such a processor from first principles: a vector
+processing unit (VPU) whose lane count is a single Verilog parameter. Phase~I
+delivered and verified the lane datapath, register files, and memories, with
+the testbench driving control signals directly. Phase~II, reported here,
+adds the instruction-sequencing control unit and integrates every module into
+a core that executes stored programs. The objectives of this phase were to:
+\begin{enumerate}
+  \item implement and verify a three-state controller for the full instruction
+        set;
+  \item run three benchmark programs to completion at 1, 2, 4, and 8 lanes and
+        check every stored output against an independent reference model; and
+  \item measure cycle counts and explain how speedup departs from the ideal
+        lane-count scaling.
+\end{enumerate}
+
 \section{Literature Review}
 
+\subsection{SIMD and vector architectures}
 Flynn's classification describes SIMD as one instruction stream operating on
-multiple data streams~\cite{flynn1966very}. The present design uses shared
-control signals and lane-local arithmetic. The RISC-V V extension also
-provides vector registers and vector--scalar operations~\cite{riscvvector}.
-Our custom ISA fixes the hardware lane count at elaboration and assembles the
-same program source for each configuration.
+multiple data streams~\cite{flynn1966very}, and Flynn later compared the
+effectiveness of the resulting organizations~\cite{flynn1972some}. The
+Cray-1 made vector registers and pipelined vector units
+practical~\cite{russell1978cray}. Hennessy and Patterson describe how modern
+vector machines raise throughput by replicating functional units across
+parallel lanes~\cite{hennessy2017computer}, and Asanovi\'c showed that
+lane-parallel vector designs remain effective in single-chip
+microprocessors~\cite{asanovic1998vector}. The present design uses the same
+organization at small scale: shared control signals drive lane-local
+arithmetic on slices of a vector register.
 
-Among FPGA soft cores, VESPA explored how configurable vector processors trade
-area for performance as their datapaths and memory systems
-change~\cite{yiannacouras2008vespa}. This project varies the lane count
-while holding the workload and RTL source fixed. Amdahl's scaling argument
-motivates distinguishing fixed work from work reduced by parallel
-execution~\cite{amdahl1967validity}. In this VPU, setup and termination are
-fixed costs, while the number of lane groups falls as the core widens.
+\subsection{Packed SIMD and vector-length agnosticism}
+General-purpose processors added packed SIMD units, beginning with Intel
+MMX~\cite{peleg1996mmx}. Kozyrakis and Patterson argued that vector
+architectures scale better than fixed-width packed SIMD because software
+need not change when the hardware width changes~\cite{kozyrakis2003scalable}.
+The RISC-V V extension adopts this vector-length-agnostic approach and
+provides vector registers and vector--scalar operations~\cite{riscvvector}.
+Our custom ISA instead fixes the hardware lane count at elaboration, but the
+assembler produces the same program source for each configuration, so one
+workload runs unchanged at every width.
+
+\subsection{Soft vector processors on FPGAs}
+VIPERS demonstrated a soft vector co-processor with a configurable number of
+lanes that accelerates a scalar soft CPU~\cite{yu2008vipers}. VESPA explored
+how configurable vector processors trade area for performance as their
+datapaths and memory systems change~\cite{yiannacouras2008vespa}, and VEGAS
+replaced the vector register file with a scratchpad to reduce memory
+overhead~\cite{chou2011vegas}. This project varies only the lane count while
+holding the workload and RTL source fixed, which isolates the effect of
+lane scaling on cycle count.
+
+\subsection{Limits to speedup}
+Amdahl's argument motivates distinguishing fixed work from work reduced by
+parallel execution~\cite{amdahl1967validity}. In this VPU, setup and
+termination are fixed costs, while the number of lane groups, and therefore
+the loop iterations, falls as the core widens. Section~\ref{sec:results}
+quantifies both components.
 
 \section{Proposed Solution}
 
@@ -107,39 +161,37 @@ generation and branch comparison.
 \begin{tikzpicture}[
   font=\footnotesize, >=Latex,
   unit/.style={draw=black!72, fill=black!4, rounded corners=2pt,
-    minimum width=31mm, minimum height=8mm, align=center},
-  labelbox/.style={font=\scriptsize, fill=white, inner sep=1.1pt},
+    minimum width=31mm, minimum height=9mm, align=center},
+  labelbox/.style={font=\scriptsize, fill=white, inner sep=1.2pt},
   control/.style={->, densely dashed, draw=black!70},
   data/.style={->, semithick}
 ]
-\node[unit] (imem) at (0,2.2) {PC and instruction\\memory};
-\node[unit] (control) at (5,2.2) {Control FSM};
-\node[unit] (sreg) at (10,2.2) {Scalar register file};
-\node[unit] (vreg) at (0,0) {Vector register file};
-\node[unit] (lanes) at (5,0) {\(L\) lane muxes\\and ALUs};
-\node[unit] (dmem) at (10,0) {Data memory};
-\node[unit] (select) at (5,-1.6) {Result selector};
-\node[unit] (wb) at (0,-1.6) {Vector write-back\\register};
-\draw[data] ([yshift=1mm]imem.east) -- node[labelbox,above] {instruction, PC} ([yshift=1mm]control.west);
-\draw[control] ([yshift=-2mm]control.west) -- node[labelbox,below] {next PC control} ([yshift=-2mm]imem.east);
-\draw[<->,semithick] (control.east) -- node[labelbox,above] {scalar ports} (sreg.west);
-\draw[data] (vreg.east) -- node[labelbox,above] {vector operands} (lanes.west);
-\draw[data] (sreg.south west) -- node[labelbox,above,sloped] {scalar broadcast} (lanes.north east);
-\draw[control] (control.south) -- node[labelbox,left] {ALU control} (lanes.north);
-\draw[control] (control.north west) |- node[labelbox,above,pos=.72] {vector addresses and enable}
-  (-2.1,3.03) |- (vreg.west);
-\draw[control] (control.north east) |- node[labelbox,above,pos=.72] {memory address and enable}
-  (12.05,3.03) |- (dmem.east);
-\draw[data] (vreg.south east) -- (1.9,-0.4) -- (1.9,-0.73)
-  -- node[labelbox,below,pos=.58] {store data} (11,-0.73)
-  -- ([xshift=10mm]dmem.south);
-\draw[data] (lanes.south) -- node[labelbox,left,pos=.72] {ALU result} (select.north);
-\draw[data] (dmem.south west) |- node[labelbox,above,pos=.75] {load data} (select.east);
-\draw[data] (select.west) -- node[labelbox,above] {selected vector} (wb.east);
-\draw[data] (wb.north) -- node[labelbox,left] {write data} (vreg.south);
+\node[unit] (imem)    at (0,3.2)    {PC and instruction\\memory};
+\node[unit] (control) at (5.5,3.2)  {Control FSM};
+\node[unit] (sreg)    at (10.5,3.2) {Scalar register file};
+\node[unit] (vreg)    at (0,0.8)    {Vector register file};
+\node[unit] (lanes)   at (5.5,0.8)  {\(L\) lane muxes\\and ALUs};
+\node[unit] (dmem)    at (11.5,0.8) {Data memory};
+\node[unit] (wb)      at (0,-1.6)   {Vector write-back\\register};
+\node[unit] (select)  at (5.5,-1.6) {Result selector};
+
+\draw[data] ([yshift=2mm]imem.east) -- node[labelbox,above=1pt] {instruction} ([yshift=2mm]control.west);
+\draw[control] ([yshift=-2mm]control.west) -- node[labelbox,below=1pt] {PC enable, branch} ([yshift=-2mm]imem.east);
+\draw[<->,semithick] (control.east) -- node[labelbox,above=1pt] {scalar ports} (sreg.west);
+\draw[control] (control.south) -- node[labelbox,right=1pt] {control signals} (lanes.north);
+\draw[data] (vreg.east) -- node[labelbox,above=1pt] {vector operands} (lanes.west);
+\draw[data] ([xshift=-6mm]sreg.south) |- node[labelbox,pos=.3,right=1pt] {scalar broadcast} (lanes.east);
+\draw[data] ([xshift=-8mm]vreg.south) |- (9.5,-0.35) node[labelbox,above=1pt,pos=0] {} -| ([xshift=-9mm]dmem.south);
+\node[labelbox] at (8.3,-0.12) {store data};
+\draw[data] (lanes.south) -- node[labelbox,right=1pt,pos=.75] {ALU result} (select.north);
+\draw[data] ([xshift=7mm]dmem.south) |- node[labelbox,pos=.75,above=1pt] {load data} (select.east);
+\draw[data] (select.west) -- node[labelbox,above=1pt] {selected vector} (wb.east);
+\draw[data] ([xshift=6mm]wb.north) -- node[labelbox,right=1pt,pos=.3] {write data} ([xshift=6mm]vreg.south);
 \end{tikzpicture}
-\caption{Integrated SIMD core. Solid arrows carry data. Dashed arrows show
-selected control paths. The FSM also drives result selection and vector capture.}
+\caption{Integrated SIMD core. Solid arrows carry data; dashed arrows carry
+control. Besides the ALU operation and operand select shown, the FSM drives the
+register addresses and write enables, the memory address and store enable,
+result selection, and vector capture.}
 \label{fig:architecture}
 \end{figure*}
 
@@ -247,6 +299,7 @@ words of \texttt{v2} update on the same rising edge.}
 \end{figure*}
 
 \section{Results and Discussion}
+\label{sec:results}
 
 \subsection{Cycle measurements}
 
@@ -307,20 +360,56 @@ its fixed fraction larger as the number of groups falls.
 
 The one-lane build shares the same RTL and benchmark source with the wider
 builds. Its comparison isolates lane scaling for these fixed workloads.
-Routed FPGA measurements are pending, so the area cost, maximum clock
-frequency, and throughput in elements per second remain open.
+These results are cycle counts from simulation. FPGA implementation results
+are not yet available: the Vivado flow in \texttt{synth/run\_synth.tcl}
+synthesizes and routes \texttt{vpu\_top} for the Artix-7
+\texttt{xc7a35tcpg236-1} at each lane count, and
+\texttt{synth/parse\_reports.py} collects utilization and timing, but the
+sweep has not been run. Area per lane, maximum clock frequency, and
+throughput in elements per second therefore remain future work.
 
 \section{Individual Contributions}
-% Team-authored section. Each member records their work, AI assistance,
-% reviewer, and commit evidence here before submission.
+Each member's work is visible in the repository's commit history.
+
+\begin{itemize}
+  \item \textbf{Dhanvin Vadlamudi (team lead, datapath RTL).} Phase~I:
+        designed and implemented \texttt{lane\_alu}, \texttt{lane\_mux},
+        \texttt{lane\_array}, \texttt{vreg\_file}, \texttt{sreg\_file}, and
+        \texttt{result\_combiner}. Phase~II: wrote
+        \texttt{datapath\_sweep\_tb}, which checks vector write-back and
+        memory contents for 64 elements at 1, 2, 4, and 8 lanes, and updated
+        the lane-array and result-combiner documentation.
+  \item \textbf{Jagruthi Pulumati (control and memory).} Phase~I: specified
+        the ISA and control FSM and implemented \texttt{dmem} and
+        \texttt{pc\_imem}. Phase~II: implemented \texttt{control\_unit}
+        with its decode table and the 577-check \texttt{control\_unit\_tb},
+        and updated the ISA and FSM documentation.
+  \item \textbf{Kasula Lalithendra (architecture and integration).}
+        Phase~I: specification, interface contracts, \texttt{vpu\_demo\_top},
+        and the build flow. Phase~II: audited the Phase~I deliverables,
+        integrated \texttt{vpu\_top}, wrote the five-instruction smoke test,
+        and updated the block diagram and top-level documentation.
+  \item \textbf{Polana Rakshita (verification and measurement).} Phase~I:
+        golden model and unit testbenches. Phase~II: wrote the two-pass
+        assembler and benchmark programs, extended the golden model to
+        generate benchmark images, built the system testbench
+        \texttt{top\_tb} with lane-independence and coverage programs, and
+        wrote \texttt{run\_bench.py}, which reproduces
+        \texttt{results.csv}.
+  \item \textbf{Chaitanya Sai Meka (report and synthesis).} Phase~I: IEEE
+        report and literature review. Phase~II: Vivado synthesis scripts and
+        the report parser, cycle-scaling analysis and plots, and the Phase~II
+        report.
+\end{itemize}
 
 \section{Conclusion}
 
 The VPU ran stored programs and matched reference outputs at every lane
 count. Wider vectors reduced loop iterations and brought vector addition
 and signed clamping close to ideal cycle scaling. The bitwise mix showed
-the cost of fixed setup as the loop shortened. Routed Vivado measurements
-are needed to quantify the area and frequency trade-off.
+the cost of fixed setup as the loop shortened. Future work is to run the
+prepared Vivado sweep to quantify the area and frequency cost of each added
+lane, and to extend the ISA with \texttt{VMUL} and cross-lane reduction.
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs}
