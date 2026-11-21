@@ -1,120 +1,131 @@
-# ============================================================
-# run_synth.tcl  —  Vivado non-project-mode synthesis script
-# SIMD Vector Processing Unit, LANE BREAKERS
-# Owner: Chaitanya Sai Meka (Role 5, Synthesis and Results)
-#
-# Usage:
-#   vivado -mode batch -source synth/run_synth.tcl
-#
-# Phase I: synthesizes lane_alu for an early resource estimate.
-# Phase II: synthesizes vpu_top at LANES = 1, 2, 4, 8.
-# ============================================================
+# From the checkout: vivado -mode batch -source synth/run_synth.tcl
+# Then merge the routed reports: python3 synth/parse_reports.py
+set FPGA_PART xc7a35tcpg236-1
 
-# ---- User-configurable variables ----------------------------------------
-set FPGA_PART    "xc7a35tcpg236-1"    ;# Basys 3 / Artix-7 (change if needed)
-set CLK_PERIOD   "10.0"               ;# Target clock period in ns (100 MHz)
-set REPORT_DIR   "synth/reports"
-set RTL_DIR      "rtl"
-
-# ---- Helper: run synthesis for one top and one LANES value --------------
-proc run_one {top lanes part clk_period report_dir rtl_dir} {
-    set run_dir "${report_dir}/lanes${lanes}"
-    file mkdir $run_dir
-
-    puts "====================================================="
-    puts " Synthesizing: top=${top}  LANES=${lanes}"
-    puts "====================================================="
-
-    # Read all RTL sources
-    read_verilog [glob ${rtl_dir}/*.v]
-
-    # Synthesize
-    synth_design \
-        -top       $top \
-        -part      $part \
-        -generic   "LANES=${lanes}" \
-        -flatten_hierarchy rebuilt
-
-    # Clock constraint
-    create_clock -period $clk_period -name clk [get_ports clk]
-
-    # Optimize
-    opt_design
-
-    # Place (required for timing)
-    place_design
-
-    # Route (required for accurate timing)
-    route_design
-
-    # Reports
-    report_utilization \
-        -file "${run_dir}/${top}_L${lanes}_utilization.rpt"
-    report_timing_summary \
-        -max_paths 10 \
-        -file "${run_dir}/${top}_L${lanes}_timing.rpt"
-    report_power \
-        -file "${run_dir}/${top}_L${lanes}_power.rpt"
-
-    puts "Reports written to: ${run_dir}/"
-    puts ""
+# Seed the instruction ROM with every base opcode and varied register and
+# immediate fields so Vivado can see the whole decoder. This identical ROM
+# is used at every width for area and timing. Benchmark cycles come from T6.
+proc write_measurement_rom {filename} {
+    set opcodes {0 1 2 3 4 5 6 7 8 16 17 32 33 34 63}
+    set state 1
+    set words {}
+    for {set addr 0} {$addr < 256} {incr addr} {
+        set state [expr {(1664525 * $state + 1013904223) & 0xffffffff}]
+        set opcode [lindex $opcodes [expr {$addr % [llength $opcodes]}]]
+        set word [expr {($opcode << 26) | ($state >> 6)}]
+        lappend words [format %08x $word]
+    }
+    set fd [open $filename w]
+    puts $fd [join $words "\n"]
+    close $fd
 }
 
-# ---- Phase I: lane_alu early resource estimate --------------------------
-# lane_alu is purely combinational; no clock port, so we just synthesize.
-puts "====================================================="
-puts " Phase I: lane_alu resource estimate (all LANES=1)"
-puts "====================================================="
-
-file mkdir "${REPORT_DIR}/lane_alu"
-read_verilog [glob ${RTL_DIR}/lane_alu.v]
-synth_design -top lane_alu -part $FPGA_PART -flatten_hierarchy rebuilt
-report_utilization -file "${REPORT_DIR}/lane_alu/lane_alu_utilization.rpt"
-puts "lane_alu utilization report: ${REPORT_DIR}/lane_alu/lane_alu_utilization.rpt"
-
-# ---- Phase II: full vpu_top sweep (uncomment when RTL is complete) ------
-# foreach lanes {1 2 4 8} {
-#     run_one "vpu_top" $lanes $FPGA_PART $CLK_PERIOD $REPORT_DIR $RTL_DIR
-# }
-
-# ---- Parse Fmax from timing report (helper proc) ------------------------
-proc parse_fmax {timing_rpt clk_period_ns} {
-    # Reads WNS from timing_summary report and computes Fmax.
-    # Fmax (MHz) = 1000 / (clk_period - WNS)   if WNS < clk_period
-    set fmax "N/A"
-    if {[catch {open $timing_rpt r} fh]} {
-        return $fmax
+proc replace_once {text original replacement} {
+    set first [string first $original $text]
+    set length [string length $original]
+    if {$first < 0 || [string first $original $text [expr {$first + $length}]] >= 0} {
+        error "Expected one occurrence of '$original' in rtl/vpu_top.v"
     }
-    while {[gets $fh line] >= 0} {
-        # Look for the WNS line in timing_summary
-        if {[regexp {WNS\(ns\)\s+([-\d\.]+)} $line match wns]} {
-            if {$wns ne "N/A" && [string is double $wns]} {
-                set slack [expr {$clk_period_ns - $wns}]
-                if {$slack > 0} {
-                    set fmax [format "%.1f" [expr {1000.0 / $slack}]]
-                }
-            }
-            break
+    return [string replace $text $first [expr {$first + $length - 1}] $replacement]
+}
+
+# Stage the measurement-only top so the simulation RTL stays independent of
+# Vivado attributes. The public ports only expose control status, so retain
+# both vector write-back and data-memory read nets with RTL attributes.
+proc stage_synthesis_top {source dest rom} {
+    set fd [open $source r]
+    set text [read $fd]
+    close $fd
+    set rom [string map [list "\\" "\\\\" "\"" "\\\""] $rom]
+    set text [replace_once $text {.ADDR_W(IMEM_ADDR_W)) u_imem} \
+        [format {.ADDR_W(IMEM_ADDR_W), .INIT_FILE("%s")) u_imem} $rom]]
+    set text [replace_once $text {reg  [VECTOR_WIDTH-1:0] vector_wb_data;} \
+        {(* DONT_TOUCH = "true" *) reg [VECTOR_WIDTH-1:0] vector_wb_data;}]
+    set text [replace_once $text {alu_result, mem_rdata, vector_result;} \
+        "alu_result, vector_result;\n    (* DONT_TOUCH = \"true\" *) wire \[VECTOR_WIDTH-1:0\] mem_rdata;"]
+    set fd [open $dest w]
+    puts -nonewline $fd $text
+    close $fd
+}
+
+proc run_lane {lanes part report_dir} {
+    puts "Implementing vpu_top at LANES=$lanes on $part"
+    synth_design -top vpu_top -part $part -generic [list LANES=$lanes] \
+        -mode out_of_context -flatten_hierarchy rebuilt
+
+    opt_design
+    place_design
+    route_design
+    if {![report_route_status -boolean_check ROUTED_FULLY]} {
+        error "LANES=$lanes did not route fully"
+    }
+
+    # Fail before publishing reports if the datapath has been pruned.
+    foreach bus {vector_wb_data mem_rdata} {
+        set pattern [format {^%s\[[0-9]+\]$} $bus]
+        set kept [get_nets -quiet -regexp $pattern]
+        if {[llength $kept] != 32 * $lanes} {
+            error "Expected [expr {32 * $lanes}] retained nets for $bus at LANES=$lanes; found [llength $kept]"
         }
     }
-    close $fh
-    return $fmax
+
+    set clk [get_clocks -quiet clk]
+    set paths [get_timing_paths -quiet -delay_type max -from $clk -to $clk -max_paths 1]
+    if {[llength $clk] != 1 || [llength $paths] != 1} {
+        error "No constrained clk-to-clk setup path for LANES=$lanes"
+    }
+    set period [get_property PERIOD $clk]
+    set wns [get_property SLACK $paths]
+    set timing [file join $report_dir timing_summary.rpt]
+    file mkdir $report_dir
+    report_utilization -file [file join $report_dir utilization.rpt]
+    report_timing_summary -delay_type max -file $timing
+    set fd [open $timing a]
+    puts $fd ""
+    puts $fd "T7 clk setup timing: period_ns=$period wns_ns=$wns"
+    close $fd
+    puts [format "LANES=%d clk period=%sns, WNS=%sns" $lanes $period $wns]
+    close_design
 }
 
-# ---- Results CSV skeleton -----------------------------------------------
-# When Phase II runs are complete, collect results with:
-#
-# set csv "report/results.csv"
-# set fh [open $csv w]
-# puts $fh "lanes,benchmark,cycles,elements,cycles_per_element,speedup_vs_1lane,luts,ffs,dsps,brams,fmax_mhz,throughput_melem_s"
-# # Fill rows from cycle_count (simulation) and report files (synthesis).
-# close $fh
-# puts "Results written to ${csv}"
+if {![llength [info commands synth_design]]} {
+    error "Run this script with Vivado in batch mode."
+}
 
-puts ""
-puts "====================================================="
-puts " run_synth.tcl complete."
-puts " Phase I report: ${REPORT_DIR}/lane_alu/"
-puts " Phase II: uncomment the foreach loop above when"
-puts "           vpu_top.v is available."
-puts "====================================================="
+set root [file normalize [file join [file dirname [info script]] ..]]
+set source_dir [file join $root rtl]
+set output_dir [file join $root synth reports]
+set work [file join $root synth .Xil vpu_sweep_[pid]_[clock clicks]]
+set lane_counts {1 2 4 8}
+file mkdir $work
+
+set status [catch {
+    set rom [file join $work measurement_imem.hex]
+    set staged_top [file join $work vpu_top.v]
+    set original_top [file join $source_dir vpu_top.v]
+    write_measurement_rom $rom
+    stage_synthesis_top $original_top $staged_top $rom
+    set sources [lsort [glob -directory $source_dir *.v]]
+    set top_index [lsearch -exact $sources $original_top]
+    set sources [lreplace $sources $top_index $top_index $staged_top]
+    read_verilog $sources
+    read_xdc [file join $root synth constraints.xdc]
+
+    foreach lanes $lane_counts {
+        run_lane $lanes $FPGA_PART [file join $work lanes$lanes]
+    }
+
+    # Publish a complete sweep only after all four runs succeed.
+    foreach lanes $lane_counts {
+        set dest [file join $output_dir lanes$lanes]
+        file mkdir $dest
+        foreach name {utilization.rpt timing_summary.rpt} {
+            file copy -force [file join $work lanes$lanes $name] [file join $dest $name]
+        }
+    }
+    puts "Reports written to $output_dir"
+} message options]
+file delete -force $work
+if {$status} {
+    return -options $options $message
+}
