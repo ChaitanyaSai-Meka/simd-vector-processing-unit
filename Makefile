@@ -4,12 +4,12 @@
 # Targets:
 #   make test   – compile and run every testbench; print PASS/FAIL per test
 #   make smoke  – run the Phase II five-instruction smoke test
-#   make wave   – run vpu_demo_top_tb at LANES=4, dump VCD, open GTKWave
+#   make system – run one Phase II system case (BENCH=b1, LANES=4 by default)
+#   make wave   – dump the integrated four-lane B1 VCD
 #   make clean  – remove compiled artefacts
 
 IVERILOG  = iverilog
 VVP       ?= vvp
-GTKWAVE   ?= $(shell which gtkwave 2>/dev/null || which surfer 2>/dev/null || echo open)
 PYTHON    ?= python3
 
 LANES     ?= 4
@@ -32,35 +32,42 @@ RTL_SRCS = $(RTL)/lane_alu.v \
            $(RTL)/vpu_top.v
 
 BUILD_DIR = /tmp/vpu_build
-VCD_FILE  = docs/vpu_demo_vadd_L4.vcd
+VCD_FILE ?= docs/vpu_b1_L4.vcd
+BENCH    ?= b1
+SYSTEM_CASES = b1 b2 b3 independence coverage
+UNIT_TESTS   = lane_alu lane_mux vreg_file sreg_file result_combiner dmem pc_imem
+DATAPATH_SRCS = $(addprefix $(RTL)/,vreg_file.v sreg_file.v lane_array.v lane_mux.v lane_alu.v result_combiner.v dmem.v)
+DUMP_FILE ?= $(BUILD_DIR)/$(BENCH)_dmem_L$(LANES).hex
 
-.PHONY: test smoke wave clean golden_self_test
+.PHONY: test smoke system wave clean golden_self_test
 
-# ── test: run all testbenches ─────────────────────────────────────────────────
-test: golden_self_test
-	@echo "========================================"
-	@echo " Running all testbenches (LANES=$(LANES))"
-	@echo "========================================"
+# Collect the failing case names while still running the rest of the suite.
+test:
 	@mkdir -p $(BUILD_DIR)
-	@$(MAKE) _run_tb TB_SRC=$(TB)/lane_alu_tb.v    TB_NAME=lane_alu_tb    EXTRA_SRC="$(RTL)/lane_alu.v"
-	@$(MAKE) _run_tb TB_SRC=$(TB)/lane_mux_tb.v    TB_NAME=lane_mux_tb    EXTRA_SRC="$(RTL)/lane_mux.v"
-	@set -e; for L in 1 4 8; do \
-	    echo "--- lane_array_tb LANES=$$L ---"; \
-	    $(IVERILOG) -DLANES=$$L -o $(BUILD_DIR)/lane_array_tb_L$$L.vvp \
-	        $(TB)/lane_array_tb.v $(RTL)/lane_array.v $(RTL)/lane_alu.v $(RTL)/lane_mux.v; \
-	    $(VVP) $(BUILD_DIR)/lane_array_tb_L$$L.vvp; \
-	done
-	@$(MAKE) _run_tb TB_SRC=$(TB)/vreg_file_tb.v   TB_NAME=vreg_file_tb   EXTRA_SRC="$(RTL)/vreg_file.v"
-	@$(MAKE) _run_tb TB_SRC=$(TB)/sreg_file_tb.v   TB_NAME=sreg_file_tb   EXTRA_SRC="$(RTL)/sreg_file.v"
-	@$(MAKE) _run_tb TB_SRC=$(TB)/result_combiner_tb.v TB_NAME=result_combiner_tb EXTRA_SRC="$(RTL)/result_combiner.v"
-	@$(MAKE) _run_tb TB_SRC=$(TB)/dmem_tb.v        TB_NAME=dmem_tb        EXTRA_SRC="$(RTL)/dmem.v"
-	@$(MAKE) _run_tb TB_SRC=$(TB)/pc_imem_tb.v     TB_NAME=pc_imem_tb     EXTRA_SRC="$(RTL)/pc_imem.v"
-	@$(MAKE) _run_demo_tb
-	@$(MAKE) smoke
-	@echo ""
-	@echo "========================================"
-	@echo " Test run complete."
-	@echo "========================================"
+	@failures=; \
+	run() { test_name=$$1; shift; "$$@" || failures="$$failures $$test_name"; }; \
+	run golden $(MAKE) --no-print-directory golden_self_test; \
+	for unit in $(UNIT_TESTS); do \
+	    run "$${unit}_tb" $(MAKE) --no-print-directory _run_tb \
+	        TB_SRC="$(TB)/$${unit}_tb.v" TB_NAME="$${unit}_tb" EXTRA_SRC="$(RTL)/$$unit.v"; \
+	done; \
+	run control_unit_tb $(MAKE) --no-print-directory _run_tb TB_SRC="$(TB)/control_unit_tb.v" \
+	    TB_NAME=control_unit_tb EXTRA_SRC="$(addprefix $(RTL)/,control_unit.v pc_imem.v dmem.v sreg_file.v)"; \
+	run demo $(MAKE) --no-print-directory _run_demo_tb; \
+	run smoke $(MAKE) --no-print-directory smoke; \
+	for width in 1 2 4 8; do \
+	    run "lane_array_L$$width" $(MAKE) --no-print-directory _run_tb \
+	        TB_SRC="$(TB)/lane_array_tb.v" TB_NAME=lane_array_tb TB_FLAGS="-DLANES=$$width" \
+	        EXTRA_SRC="$(addprefix $(RTL)/,lane_array.v lane_alu.v lane_mux.v)"; \
+	    run "datapath_L$$width" $(MAKE) --no-print-directory _run_tb \
+	        TB_SRC="$(TB)/datapath_sweep_tb.v" TB_NAME=datapath_sweep_tb \
+	        TB_FLAGS="-Pdatapath_sweep_tb.LANES=$$width" EXTRA_SRC="$(DATAPATH_SRCS)"; \
+	    for benchmark in $(SYSTEM_CASES); do \
+	        run "$${benchmark}_L$$width" $(MAKE) --no-print-directory system BENCH="$$benchmark" LANES="$$width"; \
+	    done; \
+	done; \
+	if [ -n "$$failures" ]; then echo "FAILED:$$failures"; exit 1; fi; \
+	echo "ALL PASS"
 
 # ── smoke: run the Phase II integration test ───────────────────────────────────
 smoke:
@@ -72,7 +79,7 @@ smoke:
 # ── internal: compile + run a single tb against one RTL file ─────────────────
 _run_tb:
 	@echo "--- $(TB_NAME) ---"
-	@$(IVERILOG) -o $(BUILD_DIR)/$(TB_NAME).vvp $(TB_SRC) $(EXTRA_SRC) && \
+	@$(IVERILOG) $(TB_FLAGS) -s $(TB_NAME) -o $(BUILD_DIR)/$(TB_NAME).vvp $(TB_SRC) $(EXTRA_SRC) && \
 	    $(VVP) $(BUILD_DIR)/$(TB_NAME).vvp
 
 # ── internal: compile + run vpu_demo_top_tb with all RTL ─────────────────────
@@ -82,16 +89,18 @@ _run_demo_tb:
 	    $(TB)/vpu_demo_top_tb.v $(RTL_SRCS) && \
 	    $(VVP) $(BUILD_DIR)/vpu_demo_top_tb.vvp
 
-# ── wave: generate and view waveform ─────────────────────────────────────────
-wave:
-	@echo "--- Generating waveform VCD (LANES=4) ---"
-	@mkdir -p $(BUILD_DIR) docs
-	@$(IVERILOG) -s vpu_demo_top_tb -DLANES=4 -o $(BUILD_DIR)/wave_tb.vvp \
-	    $(TB)/vpu_demo_top_tb.v $(RTL_SRCS)
-	@$(VVP) $(BUILD_DIR)/wave_tb.vvp
-	@echo "VCD written to: $(VCD_FILE)"
-	@echo "Opening GTKWave..."
-	@$(GTKWAVE) $(VCD_FILE) &
+# ── system: compile once per lane width and select the workload at runtime ────
+$(BUILD_DIR)/top_L%.vvp: $(TB)/top_tb.v $(RTL_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	@$(IVERILOG) -g2001 -Wall -s top_tb -Ptop_tb.LANES=$* -o "$@" $^
+
+system: $(BUILD_DIR)/top_L$(LANES).vvp
+	@$(VVP) "$<" +BENCH=$(BENCH) "+DUMP=$(DUMP_FILE)"
+
+# ── wave: dump the integrated B1 simulation at four lanes ─────────────────────
+wave: $(BUILD_DIR)/top_L4.vvp
+	@$(VVP) "$<" +BENCH=b1 "+VCD=$(VCD_FILE)"
+	@echo "VCD written to $(VCD_FILE)"
 
 # ── golden model self-test ────────────────────────────────────────────────────
 golden_self_test:
