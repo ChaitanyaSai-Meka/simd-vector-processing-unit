@@ -65,32 +65,25 @@ A scalar processor needs one instruction per element. A SIMD processor applies o
 The VPU is a single-issue Harvard machine. Vector registers are flat `LANES × 32`-bit buses; lane *i* occupies bits `[i*32 +: 32]`. Changing the `LANES` parameter (1, 2, 4, 8) rescales the register file, lane array and memory width with no RTL edits.
 
 ```mermaid
-flowchart TB
-    PC["pc_imem<br/>PC + instruction memory"]
-    CU["control_unit<br/>FETCH → DECODE/EXECUTE → WRITEBACK"]
-    SRF["sreg_file<br/>8 scalar registers, r0 = 0"]
-    VRF["vreg_file<br/>8 vector registers × (LANES×32 bits)"]
+flowchart LR
+    PC["pc_imem<br/>PC + instr memory"] -- "instruction" --> CU["control_unit<br/>3-state FSM"]
+    CU <-- "scalar ports" --> SRF["sreg_file<br/>8 × 32, r0 = 0"]
+    CU -. "control" .-> LA
+    VRF["vreg_file<br/>8 × (LANES×32)"] -- "vs1, vs2" --> LA
+    SRF -- "broadcast" --> LA
 
-    subgraph LA["lane_array — LANES copies built by a generate loop"]
-        direction LR
-        A0["lane 0<br/>lane_mux → lane_alu"]
-        A1["lane 1<br/>lane_mux → lane_alu"]
-        A2["lane 2<br/>lane_mux → lane_alu"]
-        A3["lane 3<br/>lane_mux → lane_alu"]
+    subgraph LA["lane_array (LANES copies)"]
+        direction TB
+        A0["lane 0: mux → ALU"]
+        A1["lane 1: mux → ALU"]
+        A2["lane 2: mux → ALU"]
+        A3["lane 3: mux → ALU"]
     end
 
-    DM["dmem<br/>one LANES×32-bit vector per address"]
-    RC["result_combiner<br/>ALU result or load data"]
-
-    PC -- "instruction" --> CU
-    CU <-- "scalar ports" --> SRF
-    CU -. "alu_op, opb_sel, addresses, write enables" .-> LA
-    VRF -- "vs1, vs2" --> LA
-    SRF -- "scalar broadcast" --> LA
-    VRF -- "store data" --> DM
-    LA -- "alu_result" --> RC
+    LA -- "alu_result" --> RC["result_combiner"]
+    VRF -- "store data" --> DM["dmem<br/>LANES×32 per address"]
     DM -- "load data" --> RC
-    RC -- "write-back to vd" --> VRF
+    RC -- "write-back" --> VRF
 ```
 
 `vpu_top` connects every block. The control unit fetches each instruction, reads scalar operands for addresses and branches, and drives the datapath; the dashed arrow is control. Phase I's `vpu_demo_top`, where the testbench drives control directly, is kept as a datapath demo. See [`docs/vpu_top.md`](docs/vpu_top.md) and [`docs/control_unit.md`](docs/control_unit.md).
