@@ -5,6 +5,7 @@
 #   make test   – compile and run every testbench; print PASS/FAIL per test
 #   make smoke  – run the Phase II five-instruction smoke test
 #   make system – run one Phase II system case (BENCH=b1, LANES=4 by default)
+#   make bench  – measure B1–B3 at all lane counts and write report/results.csv
 #   make wave   – dump the integrated four-lane B1 VCD
 #   make clean  – remove compiled artefacts
 
@@ -39,7 +40,7 @@ UNIT_TESTS   = lane_alu lane_mux vreg_file sreg_file result_combiner dmem pc_ime
 DATAPATH_SRCS = $(addprefix $(RTL)/,vreg_file.v sreg_file.v lane_array.v lane_mux.v lane_alu.v result_combiner.v dmem.v)
 DUMP_FILE ?= $(BUILD_DIR)/$(BENCH)_dmem_L$(LANES).hex
 
-.PHONY: test smoke system wave clean golden_self_test
+.PHONY: test smoke system bench wave clean golden_self_test
 
 # Collect the failing case names while still running the rest of the suite.
 test:
@@ -96,6 +97,10 @@ $(BUILD_DIR)/top_L%.vvp: $(TB)/top_tb.v $(RTL_SRCS)
 
 system: $(BUILD_DIR)/top_L$(LANES).vvp
 	@$(VVP) "$<" +BENCH=$(BENCH) "+DUMP=$(DUMP_FILE)"
+
+# ── bench: measure verified system workloads ──────────────────────────────────
+bench:
+	@$(PYTHON) verif/run_bench.py --make "$(MAKE_COMMAND)"
 
 # ── wave: dump the integrated B1 simulation at four lanes ─────────────────────
 wave: $(BUILD_DIR)/top_L4.vvp
