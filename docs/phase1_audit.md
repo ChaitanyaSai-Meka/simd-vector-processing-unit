@@ -32,3 +32,12 @@ Audit baseline is commit `67d6738` on `main`. The Phase I regression passes and 
 | Phase II regression summary | Polana Rakshita (T5) | Add the required `ALL PASS` or `FAILED: <list>` summary when the system tests are integrated. |
 
 The final controller and integrated top are Phase II work assigned to T1 and T4 in the brief. The Phase I demo drives datapath control signals directly and tests instruction and data memory separately.
+
+## Status update (Phase II)
+
+| Item | Status |
+| --- | --- |
+| Phase I video link | Done. The README links the [Phase I demo video](https://drive.google.com/file/d/1J8yfL7EDzvQIP1-MFa14KIe3Ny5_jfE6/view?usp=sharing). |
+| All-lane datapath regression | Done. `make test` runs `lane_array_tb` and `datapath_sweep_tb` at `LANES=1,2,4,8`. |
+| Phase II regression summary | Done. `make test` ends with `ALL PASS` or `FAILED: <list>`. |
+| Dedicated `docs/vpu_demo_top.md` | Open. The demo top is still described in [`block_diagram.md`](block_diagram.md) and [`interfaces.md`](interfaces.md). |
