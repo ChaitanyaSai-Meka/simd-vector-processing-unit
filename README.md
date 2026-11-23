@@ -342,4 +342,5 @@ simd-vector-processing-unit/
 | [`docs/vpu_top.md`](docs/vpu_top.md) | Integrated core |
 | [`docs/decisions.md`](docs/decisions.md) | Design decision log |
 | [`docs/verification.md`](docs/verification.md) | Verification strategy and test list |
-| `docs/<module>.md` | One document per RTL module |
+| Module docs | [`lane_alu`](docs/lane_alu.md) · [`lane_mux`](docs/lane_mux.md) · [`lane_array`](docs/lane_array.md) · [`vreg_file`](docs/vreg_file.md) · [`sreg_file`](docs/sreg_file.md) · [`result_combiner`](docs/result_combiner.md) · [`dmem`](docs/dmem.md) · [`pc_imem`](docs/pc_imem.md) |
+| [`docs/phase1_audit.md`](docs/phase1_audit.md) | Phase I audit and Phase II status |
