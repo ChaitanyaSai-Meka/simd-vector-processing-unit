@@ -62,12 +62,15 @@ of vector addition, signed threshold clamping, and a bitwise mix for every
 tested lane count. At eight lanes, the benchmarks achieved cycle-count
 speedups of \(7.59\times\), \(7.63\times\), and \(7.01\times\), respectively,
 against the same core at one lane. Fixed instruction costs account for
-the departure from ideal scaling in these simulations.
+the departure from ideal scaling in these simulations. The routed ECP5
+clock estimate falls from 54.07\,MHz at one lane to 45.52\,MHz at eight.
+Combining routed timing with simulation cycles gives estimated eight-lane
+throughput speedups of \(6.39\times\), \(6.42\times\), and \(5.90\times\).
 \end{abstract}
 
 \begin{IEEEkeywords}
 SIMD, vector processor, data-level parallelism, Verilog, cycle-count
-evaluation, hardware verification
+evaluation, FPGA implementation, hardware verification
 \end{IEEEkeywords}
 
 \section{Introduction}
@@ -88,9 +91,10 @@ a core that executes stored programs. The objectives of this phase were to:
   \item implement and verify a three-state controller for the full instruction
         set;
   \item run three benchmark programs to completion at 1, 2, 4, and 8 lanes and
-        check every stored output against an independent reference model; and
-  \item measure cycle counts and explain how speedup departs from the ideal
-        lane-count scaling.
+        check every stored output against an independent reference model;
+  \item measure cycle counts and explain how speedup departs from ideal
+        lane-count scaling; and
+  \item quantify the FPGA resource and timing trade-off of widening the core.
 \end{enumerate}
 
 \section{Literature Review}
@@ -360,13 +364,127 @@ its fixed fraction larger as the number of groups falls.
 
 The one-lane build shares the same RTL and benchmark source with the wider
 builds. Its comparison isolates lane scaling for these fixed workloads.
-These results are cycle counts from simulation. FPGA implementation results
-are not yet available: the Vivado flow in \texttt{synth/run\_synth.tcl}
-synthesizes and routes \texttt{vpu\_top} for the Artix-7
-\texttt{xc7a35tcpg236-1} at each lane count, and
-\texttt{synth/parse\_reports.py} collects utilization and timing, but the
-sweep has not been run. Area per lane, maximum clock frequency, and
-throughput in elements per second therefore remain future work.
+
+\subsection{FPGA resource use and timing}
+
+The sweep ran on macOS, where Vivado was unavailable. We used Yosys
+0.71+77 and nextpnr-ecp5 0.11.1-121 on a Lattice ECP5 LFE5U-85F
+(CABGA381), with the same RTL, a 50\,MHz target, and placement seed 1. The synthesis copy
+used a common instruction ROM covering the base ISA and preserved the
+vector write-back and data-memory read buses. The logs and
+\texttt{synth/oss\_results.csv} record the resource counts and final routed
+\(F_{\max}\). All widths routed successfully. The one- and two-lane builds
+met the 50\,MHz setup target, while the four- and eight-lane builds fell below it.
+
+Tables~\ref{tab:ecp5} and~\ref{tab:xc7} report the two FPGA families
+separately. ECP5 resource counts and timing are from the routed design.
+Artix-7 resource counts come from Yosys synthesis with
+\texttt{synth\_xilinx -family xc7}. This flow provides Artix-7 resource
+estimates only. The Vivado sweep remains available for routed Artix-7 timing.
+ECP5 reports \texttt{TRELLIS\_COMB} cells based on four-input logic
+and Artix-7 uses six-input LUTs, so the resource counts show scaling
+within each family.
+
+\begin{table}[!t]
+\caption{Routed ECP5 utilization and estimated Fmax}
+\label{tab:ecp5}
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+Lanes & Comb.\ cells & FFs & BRAM & Fmax (MHz) \\
+\midrule
+\csvreader[late after line=\\]{../synth/oss_results.csv}%
+  {1=\OssLanes,2=\OssComb,3=\OssFfs,5=\OssBram,6=\OssFmax}%
+  {\OssLanes & \OssComb & \OssFfs & \OssBram & \OssFmax}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[!t]
+\caption{Artix-7 resource estimates from Yosys synthesis}
+\label{tab:xc7}
+\centering
+\small
+\begin{tabular}{@{}rrrrr@{}}
+\toprule
+Lanes & Logic LUTs & FFs & LUTRAM cells & BRAM \\
+\midrule
+\csvreader[late after line=\\]{../synth/oss_results.csv}%
+  {1=\OssLanes,7=\OssLuts,8=\OssFfs,9=\OssLutram,10=\OssBram}%
+  {\OssLanes & \OssLuts & \OssFfs & \OssLutram & \OssBram}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=0.48\textwidth]{figures/ecp5_logic_cells_vs_lanes.pdf}
+\hfill
+\includegraphics[width=0.48\textwidth]{figures/ecp5_fmax_vs_lanes.pdf}
+\caption{Routed ECP5 combinational-cell usage (left) and Fmax (right).
+The timing target was 50\,MHz for every lane count.}
+\label{fig:ecp5}
+\end{figure*}
+
+Fig.~\ref{fig:ecp5} shows that ECP5 combinational usage rose from 2,911 to
+19,304 cells between one and eight lanes, while routed Fmax fell from
+54.07 to 45.52\,MHz. Both flows added 32 flip-flops per added lane, consistent
+with preserving each lane's 32-bit write-back storage.
+
+\subsection{Estimated throughput}
+
+We combine the achieved ECP5 clock estimate with the verified simulation
+counts. With \(N\) elements and \(C_L\) cycles,
+\(R_L=(N/C_L)F_{\max,L}\) in million elements per second when Fmax is in
+MHz. This method estimates throughput from routed timing and simulation.
+Measuring throughput on a physical board would require a hardware run.
+
+\csvreader{../synth/oss_results.csv}{1=\OssLanes,6=\OssFmax}%
+  {\expandafter\xdef\csname EcpFmax\OssLanes\endcsname{\OssFmax}}%
+\csvreader{results.csv}{1=\ResultLanes,2=\ResultBench,3=\ResultCycles,4=\ResultElements}%
+  {\expandafter\xdef\csname SimCycles\ResultLanes\ResultBench\endcsname{\ResultCycles}%
+   \expandafter\xdef\csname SimElements\ResultLanes\ResultBench\endcsname{\ResultElements}}%
+\ExplSyntaxOn
+\cs_new_eq:NN \EcpFpEval \fp_eval:n
+\ExplSyntaxOff
+\newcommand{\EcpRate}[2]{\pgfmathprintnumber[fixed,precision=2,fixed zerofill]{%
+  \EcpFpEval{\csname SimElements#1#2\endcsname/\csname SimCycles#1#2\endcsname*
+    \csname EcpFmax#1\endcsname}}}
+\newcommand{\EcpRateRow}[1]{#1 & \EcpRate{#1}{B1} & \EcpRate{#1}{B2} & \EcpRate{#1}{B3}\\}
+
+\begin{table}[!t]
+\caption{Estimated ECP5 throughput in million elements per second}
+\label{tab:throughput}
+\centering
+\small
+\begin{tabular}{@{}rrrr@{}}
+\toprule
+Lanes & B1 & B2 & B3 \\
+\midrule
+\EcpRateRow{1}
+\EcpRateRow{2}
+\EcpRateRow{4}
+\EcpRateRow{8}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=0.85\columnwidth]{figures/ecp5_throughput_vs_lanes.pdf}
+\caption{Estimated ECP5 throughput using routed Fmax and simulated cycles.}
+\label{fig:throughput}
+\end{figure}
+
+Table~\ref{tab:throughput} and Fig.~\ref{fig:throughput} show that all
+three workloads gain estimated throughput at every tested lane count.
+At eight lanes, B1 rises from 3.35 to 21.42 million elements/s.
+Its \(7.59\times\) cycle speedup becomes a \(6.39\times\) estimated
+throughput speedup because the wider core has a lower Fmax.
+For B2 and B3 the eight-lane throughput ratios are \(6.42\times\)
+and \(5.90\times\), respectively.
 
 \section{Individual Contributions}
 Each member's work is visible in the repository's commit history.
@@ -397,9 +515,10 @@ Each member's work is visible in the repository's commit history.
         wrote \texttt{run\_bench.py}, which reproduces
         \texttt{results.csv}.
   \item \textbf{Chaitanya Sai Meka (report and synthesis).} Phase~I: IEEE
-        report and literature review. Phase~II: Vivado synthesis scripts and
-        the report parser, cycle-scaling analysis and plots, and the Phase~II
-        report.
+        report and literature review. Phase~II: Vivado sweep scripts and
+        report parser, open-source FPGA characterization using Yosys/nextpnr,
+        FPGA resource, Fmax, and estimated throughput analysis, cycle-scaling
+        plots, and the Phase~II report.
 \end{itemize}
 
 \section{Conclusion}
@@ -407,9 +526,11 @@ Each member's work is visible in the repository's commit history.
 The VPU ran stored programs and matched reference outputs at every lane
 count. Wider vectors reduced loop iterations and brought vector addition
 and signed clamping close to ideal cycle scaling. The bitwise mix showed
-the cost of fixed setup as the loop shortened. Future work is to run the
-prepared Vivado sweep to quantify the area and frequency cost of each added
-lane, and to extend the ISA with \texttt{VMUL} and cross-lane reduction.
+the cost of fixed setup as the loop shortened. The routed ECP5 sweep showed
+that throughput continues to improve despite the lower Fmax at wider
+configurations. At eight lanes, estimated throughput was 5.90--6.42 times
+the one-lane baseline. A routed Artix-7 run or a board measurement would
+extend the comparison.
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs}

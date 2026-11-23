@@ -1,0 +1,236 @@
+{
+   "creator": "Yosys 0.71+77 (git sha1 11d972c20, Release, Clang /usr/local/osxcross/target/bin/aarch64-apple-darwin25.5-clang++ 21.1.8)",
+   "invocation": "stat -json ",
+   "modules": {
+      "$paramod$5039a6be3f0ec0d31f796da3610491a0afda5b5c\\pc_imem": {
+         "num_wires":         272,
+         "num_wire_bits":     553,
+         "num_pub_wires":     7,
+         "num_pub_wire_bits": 100,
+         "num_ports":         7,
+         "num_port_bits":     100,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         323,
+         "num_submodules":       0,
+         "num_cells_by_type": {
+            "CARRY4": 8,
+            "FDRE": 64,
+            "INV": 1,
+            "LUT2": 2,
+            "LUT3": 53,
+            "LUT4": 5,
+            "LUT5": 17,
+            "LUT6": 124,
+            "MUXF7": 49
+         }
+      },
+      "$paramod$5c7ed937de98e98a85ccfa3b2aaaf4c234284d87\\lane_array": {
+         "num_wires":         10,
+         "num_wire_bits":     549,
+         "num_pub_wires":     10,
+         "num_pub_wire_bits": 549,
+         "num_ports":         6,
+         "num_port_bits":     421,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         0,
+         "num_submodules":       8,
+         "num_cells_by_type": {
+            "$paramod\\lane_alu\\DW=s32'00000000000000000000000000100000": 4,
+            "$paramod\\lane_mux\\DW=s32'00000000000000000000000000100000": 4
+         }
+      },
+      "$paramod$5c7ed937de98e98a85ccfa3b2aaaf4c234284d87\\result_combiner": {
+         "num_wires":         4,
+         "num_wire_bits":     385,
+         "num_pub_wires":     4,
+         "num_pub_wire_bits": 385,
+         "num_ports":         4,
+         "num_port_bits":     385,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         128,
+         "num_submodules":       0,
+         "num_cells_by_type": {
+            "LUT3": 128
+         }
+      },
+      "$paramod$5c7ed937de98e98a85ccfa3b2aaaf4c234284d87\\vreg_file": {
+         "num_wires":         104,
+         "num_wire_bits":     491,
+         "num_pub_wires":     8,
+         "num_pub_wire_bits": 395,
+         "num_ports":         8,
+         "num_port_bits":     395,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         44,
+         "num_submodules":       0,
+         "num_cells_by_type": {
+            "RAM32M": 44
+         }
+      },
+      "$paramod$e57701dba6f0ef6e9d5e25fae692a3bae7aad006\\dmem": {
+         "num_wires":         261,
+         "num_wire_bits":     546,
+         "num_pub_wires":     261,
+         "num_pub_wire_bits": 546,
+         "num_ports":         5,
+         "num_port_bits":     290,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         128,
+         "num_submodules":       0,
+         "num_cells_by_type": {
+            "RAM256X1S": 128
+         }
+      },
+      "$paramod\\lane_alu\\DW=s32'00000000000000000000000000100000": {
+         "num_wires":         331,
+         "num_wire_bits":     1136,
+         "num_pub_wires":     4,
+         "num_pub_wire_bits": 100,
+         "num_ports":         4,
+         "num_port_bits":     100,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         424,
+         "num_submodules":       0,
+         "num_cells_by_type": {
+            "CARRY4": 19,
+            "INV": 1,
+            "LUT2": 77,
+            "LUT3": 89,
+            "LUT4": 38,
+            "LUT5": 100,
+            "LUT6": 100
+         }
+      },
+      "$paramod\\lane_mux\\DW=s32'00000000000000000000000000100000": {
+         "num_wires":         4,
+         "num_wire_bits":     97,
+         "num_pub_wires":     4,
+         "num_pub_wire_bits": 97,
+         "num_ports":         4,
+         "num_port_bits":     97,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         32,
+         "num_submodules":       0,
+         "num_cells_by_type": {
+            "LUT3": 32
+         }
+      },
+      "$paramod\\sreg_file\\DW=s32'00000000000000000000000000100000": {
+         "num_wires":         105,
+         "num_wire_bits":     396,
+         "num_pub_wires":     8,
+         "num_pub_wire_bits": 107,
+         "num_ports":         8,
+         "num_port_bits":     107,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         77,
+         "num_submodules":       0,
+         "num_cells_by_type": {
+            "LUT4": 65,
+            "RAM32M": 12
+         }
+      },
+      "\\control_unit": {
+         "num_wires":         347,
+         "num_wire_bits":     762,
+         "num_pub_wires":     30,
+         "num_pub_wire_bits": 393,
+         "num_ports":         26,
+         "num_port_bits":     320,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         320,
+         "num_submodules":       0,
+         "num_cells_by_type": {
+            "CARRY4": 32,
+            "FDRE": 132,
+            "INV": 3,
+            "LUT2": 80,
+            "LUT3": 40,
+            "LUT4": 16,
+            "LUT5": 9,
+            "LUT6": 8
+         }
+      },
+      "\\vpu_top": {
+         "num_wires":         132,
+         "num_wire_bits":     1188,
+         "num_pub_wires":     32,
+         "num_pub_wire_bits": 1088,
+         "num_ports":         6,
+         "num_port_bits":     99,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         228,
+         "num_submodules":       7,
+         "num_cells_by_type": {
+            "BUFG": 1,
+            "FDRE": 128,
+            "IBUF": 2,
+            "OBUF": 97,
+            "$paramod$5039a6be3f0ec0d31f796da3610491a0afda5b5c\\pc_imem": 1,
+            "$paramod$5c7ed937de98e98a85ccfa3b2aaaf4c234284d87\\lane_array": 1,
+            "$paramod$5c7ed937de98e98a85ccfa3b2aaaf4c234284d87\\result_combiner": 1,
+            "$paramod$5c7ed937de98e98a85ccfa3b2aaaf4c234284d87\\vreg_file": 1,
+            "$paramod$e57701dba6f0ef6e9d5e25fae692a3bae7aad006\\dmem": 1,
+            "$paramod\\sreg_file\\DW=s32'00000000000000000000000000100000": 1,
+            "control_unit": 1
+         }
+      }
+   },
+      "design": {
+         "num_wires":         2575,
+         "num_wire_bits":     9802,
+         "num_pub_wires":     392,
+         "num_pub_wire_bits": 4351,
+         "num_ports":         102,
+         "num_port_bits":     2905,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         3072,
+         "num_submodules":       7,
+         "num_cells_by_type": {
+            "BUFG": 1,
+            "CARRY4": 116,
+            "FDRE": 324,
+            "IBUF": 2,
+            "INV": 8,
+            "LUT2": 390,
+            "LUT3": 705,
+            "LUT4": 238,
+            "LUT5": 426,
+            "LUT6": 532,
+            "MUXF7": 49,
+            "OBUF": 97,
+            "RAM256X1S": 128,
+            "RAM32M": 56,
+            "$paramod$5039a6be3f0ec0d31f796da3610491a0afda5b5c\\pc_imem": 1,
+            "$paramod$5c7ed937de98e98a85ccfa3b2aaaf4c234284d87\\lane_array": 1,
+            "$paramod$5c7ed937de98e98a85ccfa3b2aaaf4c234284d87\\result_combiner": 1,
+            "$paramod$5c7ed937de98e98a85ccfa3b2aaaf4c234284d87\\vreg_file": 1,
+            "$paramod$e57701dba6f0ef6e9d5e25fae692a3bae7aad006\\dmem": 1,
+            "$paramod\\sreg_file\\DW=s32'00000000000000000000000000100000": 1,
+            "control_unit": 1
+         }
+      }
+}
+

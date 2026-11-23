@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render publication-ready vector PDF figures from report/results.csv."""
+"""Render vector PDF figures from simulation and FPGA result CSVs."""
 
 import argparse
 import csv
@@ -15,6 +15,8 @@ from reportlab.lib.colors import HexColor
 
 
 REPORT = Path(__file__).resolve().parent
+SIMULATION_CSV = REPORT / "results.csv"
+OSS_CSV = REPORT.parent / "synth" / "oss_results.csv"
 LANES = (1, 2, 4, 8)
 BENCHMARKS = ("B1", "B2", "B3")
 STYLES = {
@@ -23,13 +25,15 @@ STYLES = {
     "B3": ("#146c59", "FilledDiamond", [2, 2]),
     "Ideal": ("#727c8b", None, [4, 3]),
     "VPU": ("#145c9e", "FilledCircle", None),
+    "ECP5": ("#145c9e", "FilledCircle", None),
+    "50 MHz target": ("#727c8b", None, [4, 3]),
 }
 
 
 def read_results(path):
     with path.open(newline="", encoding="utf-8") as stream:
         rows = csv.DictReader(stream)
-        required = {"lanes", "benchmark", "cycles", "speedup_vs_1lane"}
+        required = {"lanes", "benchmark", "cycles", "elements", "speedup_vs_1lane"}
         if not required.issubset(rows.fieldnames or ()):
             raise ValueError(f"{path} is missing required simulation columns")
         data = {}
@@ -130,19 +134,61 @@ def draw_figure(path, title, axis_label, series):
     renderPDF.drawToFile(drawing, str(path), title=title, invariant=True)
 
 
-def generate(data, output_dir):
+def read_oss_results(path):
+    counts = {}
+    with path.open(newline="", encoding="utf-8") as stream:
+        rows = csv.DictReader(stream)
+        if not {"lanes", "ecp5_luts", "ecp5_fmax_mhz"}.issubset(rows.fieldnames or ()):
+            raise ValueError(f"{path} is missing required ECP5 columns")
+        for row in rows:
+            if None in row or None in row.values():
+                raise ValueError(f"{path} contains a malformed row")
+            lanes, cells = int(row["lanes"]), int(row["ecp5_luts"])
+            fmax = float(row["ecp5_fmax_mhz"])
+            if lanes not in LANES or lanes in counts or cells <= 0 or not math.isfinite(fmax) or fmax <= 0:
+                raise ValueError(f"{path} contains an invalid or duplicate result for {lanes} lanes")
+            counts[lanes] = cells, fmax
+    if set(counts) != set(LANES):
+        raise ValueError(f"{path} must contain results for {LANES}")
+    return counts
+
+
+def ecp5_plots(data, oss):
+    cells, fmax = zip(*(oss[lanes] for lanes in LANES))
+    cycles = metric_series(data, "cycles")
+    elements = metric_series(data, "elements")
+    throughput = {
+        bench: [n / c * mhz for n, c, mhz in zip(elements[bench], cycles[bench], fmax)]
+        for bench in BENCHMARKS
+    }
+    return [
+        ("ecp5_logic_cells_vs_lanes", "ECP5 combinational utilization", "TRELLIS_COMB cells",
+         {"ECP5": cells}),
+        ("ecp5_fmax_vs_lanes", "ECP5 routed Fmax", "Fmax (MHz)",
+         {"ECP5": fmax, "50 MHz target": (50,) * len(LANES)}),
+        ("ecp5_throughput_vs_lanes", "ECP5 estimated throughput", "Million elements per second",
+         throughput),
+    ]
+
+
+def generate(data, output_dir, oss=None):
     cycles = metric_series(data, "cycles")
     speedup = metric_series(data, "speedup_vs_1lane")
     plots = [
         ("cycles_vs_lanes", "Execution cycles", "Cycles", cycles),
         ("speedup_vs_lanes", "Cycle speedup", "Speedup vs. one lane", {"Ideal": LANES, **speedup}),
-        ("luts_vs_lanes", "FPGA LUT utilization", "LUTs",
-         metric_series(data, "luts", hardware=True, optional=True)),
-        ("fmax_vs_lanes", "Estimated maximum clock frequency", "Fmax (MHz)",
-         metric_series(data, "fmax_mhz", hardware=True, optional=True)),
-        ("throughput_vs_lanes", "Estimated throughput", "Million elements per second",
-         metric_series(data, "throughput_melem_s", optional=True)),
     ]
+    if oss is not None:
+        plots.extend(ecp5_plots(data, oss))
+    else:
+        plots.extend([
+            ("luts_vs_lanes", "FPGA LUT utilization", "LUTs",
+             metric_series(data, "luts", hardware=True, optional=True)),
+            ("fmax_vs_lanes", "Estimated maximum clock frequency", "Fmax (MHz)",
+             metric_series(data, "fmax_mhz", hardware=True, optional=True)),
+            ("throughput_vs_lanes", "Estimated throughput", "Million elements per second",
+             metric_series(data, "throughput_melem_s", optional=True)),
+        ])
     output_dir.mkdir(parents=True, exist_ok=True)
     for name, title, axis_label, series in plots:
         path = output_dir / f"{name}.pdf"
@@ -157,11 +203,16 @@ def generate(data, output_dir):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--csv", type=Path, default=REPORT / "results.csv")
+    parser.add_argument("--csv", type=Path, default=SIMULATION_CSV)
+    parser.add_argument("--oss-csv", type=Path, help="OSS synthesis CSV (auto-detected for the repository CSV)")
     parser.add_argument("--output-dir", type=Path, default=REPORT / "figures")
     args = parser.parse_args()
     try:
-        generate(read_results(args.csv), args.output_dir)
+        oss_path = args.oss_csv
+        if oss_path is None and args.csv.resolve() == SIMULATION_CSV and OSS_CSV.is_file():
+            oss_path = OSS_CSV
+        oss = read_oss_results(oss_path) if oss_path is not None else None
+        generate(read_results(args.csv), args.output_dir, oss)
     except (OSError, ValueError) as exc:
         parser.exit(1, f"plot.py: {exc}\n")
 

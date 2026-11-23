@@ -1,0 +1,216 @@
+
+14. Printing statistics.
+
+=== $paramod$3dcfa494c9adfda088b72040aee724577781325a\lane_array ===
+
+        +----------Local Count, excluding submodules.
+        | 
+       14 wires
+     1061 wire bits
+       14 public wires
+     1061 public wire bits
+        6 ports
+      805 port bits
+       16 submodules
+        8   $paramod\lane_alu\DW=s32'00000000000000000000000000100000
+        8   $paramod\lane_mux\DW=s32'00000000000000000000000000100000
+
+=== $paramod$3dcfa494c9adfda088b72040aee724577781325a\result_combiner ===
+
+        +----------Local Count, excluding submodules.
+        | 
+        4 wires
+      769 wire bits
+        4 public wires
+      769 public wire bits
+        4 ports
+      769 port bits
+      256 cells
+      256   LUT3
+
+=== $paramod$3dcfa494c9adfda088b72040aee724577781325a\vreg_file ===
+
+        +----------Local Count, excluding submodules.
+        | 
+      184 wires
+      955 wire bits
+        8 public wires
+      779 public wire bits
+        8 ports
+      779 port bits
+       86 cells
+       86   RAM32M
+
+=== $paramod$5039a6be3f0ec0d31f796da3610491a0afda5b5c\pc_imem ===
+
+        +----------Local Count, excluding submodules.
+        | 
+      272 wires
+      553 wire bits
+        7 public wires
+      100 public wire bits
+        7 ports
+      100 port bits
+      323 cells
+        8   CARRY4
+       64   FDRE
+        1   INV
+        2   LUT2
+       53   LUT3
+        5   LUT4
+       17   LUT5
+      124   LUT6
+       49   MUXF7
+
+=== $paramod$6a7b9288632d9493565d86c090c317c5de246e82\dmem ===
+
+        +----------Local Count, excluding submodules.
+        | 
+      517 wires
+     1058 wire bits
+      517 public wires
+     1058 public wire bits
+        5 ports
+      546 port bits
+      256 cells
+      256   RAM256X1S
+
+=== $paramod\lane_alu\DW=s32'00000000000000000000000000100000 ===
+
+        +----------Local Count, excluding submodules.
+        | 
+      331 wires
+     1136 wire bits
+        4 public wires
+      100 public wire bits
+        4 ports
+      100 port bits
+      424 cells
+       19   CARRY4
+        1   INV
+       77   LUT2
+       89   LUT3
+       38   LUT4
+      100   LUT5
+      100   LUT6
+
+=== $paramod\lane_mux\DW=s32'00000000000000000000000000100000 ===
+
+        +----------Local Count, excluding submodules.
+        | 
+        4 wires
+       97 wire bits
+        4 public wires
+       97 public wire bits
+        4 ports
+       97 port bits
+       32 cells
+       32   LUT3
+
+=== $paramod\sreg_file\DW=s32'00000000000000000000000000100000 ===
+
+        +----------Local Count, excluding submodules.
+        | 
+      105 wires
+      396 wire bits
+        8 public wires
+      107 public wire bits
+        8 ports
+      107 port bits
+       77 cells
+       65   LUT4
+       12   RAM32M
+
+=== control_unit ===
+
+        +----------Local Count, excluding submodules.
+        | 
+      347 wires
+      762 wire bits
+       30 public wires
+      393 public wire bits
+       26 ports
+      320 port bits
+      320 cells
+       32   CARRY4
+      132   FDRE
+        3   INV
+       80   LUT2
+       40   LUT3
+       16   LUT4
+        9   LUT5
+        8   LUT6
+
+=== vpu_top ===
+
+        +----------Local Count, excluding submodules.
+        | 
+      132 wires
+     1956 wire bits
+       32 public wires
+     1856 public wire bits
+        6 ports
+       99 port bits
+      356 cells
+        1   BUFG
+      256   FDRE
+        2   IBUF
+       97   OBUF
+        7 submodules
+        1   $paramod$3dcfa494c9adfda088b72040aee724577781325a\lane_array
+        1   $paramod$3dcfa494c9adfda088b72040aee724577781325a\result_combiner
+        1   $paramod$3dcfa494c9adfda088b72040aee724577781325a\vreg_file
+        1   $paramod$5039a6be3f0ec0d31f796da3610491a0afda5b5c\pc_imem
+        1   $paramod$6a7b9288632d9493565d86c090c317c5de246e82\dmem
+        1   $paramod\sreg_file\DW=s32'00000000000000000000000000100000
+        1   control_unit
+
+=== design hierarchy ===
+
+        +----------Count including submodules.
+        | 
+     5322 vpu_top
+      424   $paramod\lane_alu\DW=s32'00000000000000000000000000100000
+       32   $paramod\lane_mux\DW=s32'00000000000000000000000000100000
+      256 $paramod$3dcfa494c9adfda088b72040aee724577781325a\result_combiner
+       86 $paramod$3dcfa494c9adfda088b72040aee724577781325a\vreg_file
+      323 $paramod$5039a6be3f0ec0d31f796da3610491a0afda5b5c\pc_imem
+      256 $paramod$6a7b9288632d9493565d86c090c317c5de246e82\dmem
+       77 $paramod\sreg_file\DW=s32'00000000000000000000000000100000
+      320 control_unit
+
+        +----------Count including submodules.
+        | 
+     4255 wires
+    17374 wire bits
+      684 public wires
+     7699 public wire bits
+      134 ports
+     5101 port bits
+        - memories
+        - memory bits
+        - processes
+     5322 cells
+        1   BUFG
+      192   CARRY4
+      452   FDRE
+        2   IBUF
+       12   INV
+      698   LUT2
+     1317   LUT3
+      390   LUT4
+      826   LUT5
+      932   LUT6
+       49   MUXF7
+       97   OBUF
+      256   RAM256X1S
+       98   RAM32M
+        7 submodules
+        1   $paramod$3dcfa494c9adfda088b72040aee724577781325a\lane_array
+        1   $paramod$3dcfa494c9adfda088b72040aee724577781325a\result_combiner
+        1   $paramod$3dcfa494c9adfda088b72040aee724577781325a\vreg_file
+        1   $paramod$5039a6be3f0ec0d31f796da3610491a0afda5b5c\pc_imem
+        1   $paramod$6a7b9288632d9493565d86c090c317c5de246e82\dmem
+        1   $paramod\sreg_file\DW=s32'00000000000000000000000000100000
+        1   control_unit
+

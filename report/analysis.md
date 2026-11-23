@@ -29,10 +29,19 @@ explains its lower relative speedup as the number of groups falls.
 
 ## FPGA measurements and baseline
 
-Increasing the lane count replicates the lane ALU and operand mux and widens
-the vector registers and data-memory port. The current CSV contains simulation
-results. Routed Vivado measurements are needed to quantify the LUT cost,
-compare maximum clock frequency, and estimate throughput in elements per second.
+The [open-source FPGA sweep](../synth/oss_results.csv) routed the ECP5 design
+at every width. [Combinational utilization](figures/ecp5_logic_cells_vs_lanes.pdf)
+rose from 2,911 to 19,304 cells, while [routed Fmax](figures/ecp5_fmax_vs_lanes.pdf)
+fell from 54.07 to 45.52 MHz. The 1- and 2-lane builds met the 50 MHz target.
+The 4- and 8-lane builds fell below it. Both device flows added 32 flip-flops
+per added lane, consistent with preserving the 32-bit write-back storage
+in each lane. The Artix-7 counts are Yosys resource estimates from synthesis.
+
+[Estimated ECP5 throughput](figures/ecp5_throughput_vs_lanes.pdf) uses
+(elements / simulated cycles) × routed Fmax in MHz. At 8 lanes it reached
+21.42, 11.12, and 14.21 million elements/s for B1, B2, and B3. These are
+6.39×, 6.42×, and 5.90× the respective one-lane estimates. The lower clock
+rate accounts for the difference from cycle-only speedup.
 
 The one-lane baseline runs the same RTL and instruction sequence for each
 benchmark, with one element per lane group. It isolates the effect of widening
@@ -42,7 +51,5 @@ require measurements for that processor.
 
 ## Regenerate the figures
 
-Run `python3 report/plot.py` with ReportLab installed. The script currently
-generates the cycle and speedup PDFs. Once the routed reports are merged with
-`python3 synth/parse_reports.py`, rerun the plot script to generate the LUT,
-Fmax, and throughput figures from the populated CSV.
+Run `python3 report/plot.py` with ReportLab installed. The plot script reads
+the simulation CSV and the open-source synthesis CSV to reproduce all five PDFs.

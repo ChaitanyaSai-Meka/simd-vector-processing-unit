@@ -1,0 +1,565 @@
+mkdir: /Users/Chaitanya/.config/yosyshq: Operation not permitted
+mkdir: /Users/Chaitanya/.local/share: Operation not permitted
+
+
+Info: Logic utilisation before packing:
+Info:     Total LUT4s:      9810/83640    11%
+Info:         logic LUTs:   5842/83640     6%
+Info:         carry LUTs:    416/83640     0%
+Info:           RAM LUTs:   2368/10455    22%
+Info:          RAMW LUTs:   1184/20910     5%
+
+Info:      Total DFFs:       260/83640     0%
+
+Info: Packing IOs..
+Info: Packing constants..
+Info: Packing carries...
+Info: Packing LUTs...
+Info: Packing LUT5-7s...
+Info: Packing FFs...
+Info:     136 FFs paired with LUTs.
+Info: Generating derived timing constraints...
+Info: Promoting globals...
+Info:     promoting clock net clk$TRELLIS_IO_IN to global network
+Info: Checksum: 0x4257b131
+
+Info: Device utilisation:
+Info: 	          TRELLIS_IO:      99/    205    48%
+Info: 	                DCCA:       1/     56     1%
+Info: 	              DP16KD:       1/    208     0%
+Info: 	          MULT18X18D:       0/    156     0%
+Info: 	              ALU54B:       0/     78     0%
+Info: 	             EHXPLLL:       0/      4     0%
+Info: 	             EXTREFB:       0/      2     0%
+Info: 	           PCSCLKDIV:       0/      2     0%
+Info: 	             IOLOGIC:       0/    224     0%
+Info: 	            SIOLOGIC:       0/    141     0%
+Info: 	                 GSR:       0/      1     0%
+Info: 	               JTAGG:       0/      1     0%
+Info: 	                OSCG:       0/      1     0%
+Info: 	               SEDGA:       0/      1     0%
+Info: 	                 DTR:       0/      1     0%
+Info: 	             USRMCLK:       0/      1     0%
+Info: 	             CLKDIVF:       0/      4     0%
+Info: 	           ECLKSYNCB:       0/     10     0%
+Info: 	             DLLDELD:       0/      8     0%
+Info: 	              DDRDLL:       0/      4     0%
+Info: 	             DQSBUFM:       0/     14     0%
+Info: 	     TRELLIS_ECLKBUF:       0/      8     0%
+Info: 	        ECLKBRIDGECS:       0/      2     0%
+Info: 	                DCSC:       0/      2     0%
+Info: 	                 GND:       1/      1   100%
+Info: 	          TRELLIS_FF:     260/  83640     0%
+Info: 	                 VCC:       1/      1   100%
+Info: 	        TRELLIS_COMB:    9868/  83640    11%
+Info: 	        TRELLIS_RAMW:     592/  10455     5%
+
+Info: Placed 2 cells based on constraints.
+Info: Creating initial analytic placement for 4372 cells, random placement wirelen = 556572.
+Info:     at initial placer iter 0, wirelen = 9565
+Info:     at initial placer iter 1, wirelen = 9220
+Info:     at initial placer iter 2, wirelen = 9100
+Info:     at initial placer iter 3, wirelen = 9096
+Info: Running main analytical placer, max placement attempts per cell = 14642166.
+Info:     at iteration #1, type ALL: wirelen solved = 9019, spread = 71032, legal = 71794; time = 0.12s
+Info:     at iteration #2, type ALL: wirelen solved = 11006, spread = 53823, legal = 55002; time = 0.13s
+Info:     at iteration #3, type ALL: wirelen solved = 14306, spread = 48224, legal = 49146; time = 0.12s
+Info:     at iteration #4, type ALL: wirelen solved = 16170, spread = 46195, legal = 47009; time = 0.12s
+Info:     at iteration #5, type ALL: wirelen solved = 19977, spread = 42654, legal = 43718; time = 0.11s
+Info:     at iteration #6, type ALL: wirelen solved = 19790, spread = 42567, legal = 43833; time = 0.11s
+Info:     at iteration #7, type ALL: wirelen solved = 21584, spread = 40306, legal = 41339; time = 0.10s
+Info:     at iteration #8, type ALL: wirelen solved = 21225, spread = 40063, legal = 41050; time = 0.10s
+Info:     at iteration #9, type ALL: wirelen solved = 22397, spread = 39226, legal = 40216; time = 0.16s
+Info:     at iteration #10, type ALL: wirelen solved = 22943, spread = 38264, legal = 39347; time = 0.11s
+Info:     at iteration #11, type ALL: wirelen solved = 23446, spread = 38831, legal = 39874; time = 0.10s
+Info:     at iteration #12, type ALL: wirelen solved = 23420, spread = 38027, legal = 39327; time = 0.12s
+Info:     at iteration #13, type ALL: wirelen solved = 23944, spread = 38317, legal = 39463; time = 0.10s
+Info:     at iteration #14, type ALL: wirelen solved = 23939, spread = 38296, legal = 39712; time = 0.11s
+Info:     at iteration #15, type ALL: wirelen solved = 24562, spread = 37851, legal = 39141; time = 0.13s
+Info:     at iteration #16, type ALL: wirelen solved = 24431, spread = 37506, legal = 38938; time = 0.12s
+Info:     at iteration #17, type ALL: wirelen solved = 24312, spread = 37980, legal = 39280; time = 0.10s
+Info:     at iteration #18, type ALL: wirelen solved = 24854, spread = 37581, legal = 38838; time = 0.10s
+Info:     at iteration #19, type ALL: wirelen solved = 25174, spread = 37847, legal = 38982; time = 0.10s
+Info:     at iteration #20, type ALL: wirelen solved = 26546, spread = 37286, legal = 38638; time = 0.13s
+Info:     at iteration #21, type ALL: wirelen solved = 25895, spread = 37309, legal = 38833; time = 0.10s
+Info:     at iteration #22, type ALL: wirelen solved = 26404, spread = 37852, legal = 39200; time = 0.10s
+Info:     at iteration #23, type ALL: wirelen solved = 27651, spread = 36839, legal = 38185; time = 0.10s
+Info:     at iteration #24, type ALL: wirelen solved = 26977, spread = 38174, legal = 39454; time = 0.10s
+Info:     at iteration #25, type ALL: wirelen solved = 28015, spread = 37724, legal = 38948; time = 0.10s
+Info:     at iteration #26, type ALL: wirelen solved = 28241, spread = 37443, legal = 38634; time = 0.11s
+Info:     at iteration #27, type ALL: wirelen solved = 28197, spread = 37394, legal = 38633; time = 0.13s
+Info:     at iteration #28, type ALL: wirelen solved = 28168, spread = 37653, legal = 38928; time = 0.14s
+Info: HeAP Placer Time: 4.81s
+Info:   of which solving equations: 3.05s
+Info:   of which spreading cells: 0.32s
+Info:   of which strict legalisation: 0.14s
+
+Info: Running simulated annealing placer for refinement.
+Info:   at iteration #1: temp = 0.000000, timing cost = 15692, wirelen = 38185
+Info:   at iteration #5: temp = 0.000000, timing cost = 15092, wirelen = 33430
+Info:   at iteration #10: temp = 0.000000, timing cost = 15748, wirelen = 32319
+Info:   at iteration #15: temp = 0.000000, timing cost = 13618, wirelen = 31828
+Info:   at iteration #20: temp = 0.000000, timing cost = 14090, wirelen = 31681
+Info:   at iteration #25: temp = 0.000000, timing cost = 13978, wirelen = 31622
+Info:   at iteration #27: temp = 0.000000, timing cost = 13963, wirelen = 31611 
+Info: SA placement time 12.81s
+
+Info: Max frequency for clock '$glbnet$clk$TRELLIS_IO_IN': 42.78 MHz (FAIL at 50.00 MHz)
+
+Info: Max delay <async>                           -> posedge $glbnet$clk$TRELLIS_IO_IN: 23.88 ns
+Info: Max delay posedge $glbnet$clk$TRELLIS_IO_IN -> <async>                          : 13.09 ns
+
+Info: Slack histogram:
+Info:  legend: times are in ps
+Info:          * represents 66 endpoint(s)
+Info:          + represents [1,66) endpoint(s)
+Info: [ -3377,  -2246) |+
+Info: [ -2246,  -1115) |+
+Info: [ -1115,     16) |+
+Info: [    16,   1147) |**+
+Info: [  1147,   2278) |**************+
+Info: [  2278,   3409) |************+
+Info: [  3409,   4540) |******************+
+Info: [  4540,   5671) |****************************************************+
+Info: [  5671,   6802) |************************************************************ 
+Info: [  6802,   7933) |****************************+
+Info: [  7933,   9064) |******+
+Info: [  9064,  10195) |***+
+Info: [ 10195,  11326) |*****+
+Info: [ 11326,  12457) |*****+
+Info: [ 12457,  13588) |+
+Info: [ 13588,  14719) |+
+Info: [ 14719,  15850) |+
+Info: [ 15850,  16981) |*+
+Info: [ 16981,  18112) |****+
+Info: [ 18112,  19243) |+
+Info: Checksum: 0x57bc6e6d
+Info: Routing globals...
+Info:     routing clock net $glbnet$clk$TRELLIS_IO_IN using global 8
+
+Info: Routing..
+Info: Setting up routing queue.
+Info: Routing 46692 arcs.
+Info:            |   (re-)routed arcs  |   delta    | remaining|       time spent     |
+Info:    IterCnt |  w/ripup   wo/ripup |  w/r  wo/r |      arcs| batch(sec) total(sec)|
+Info:       1000 |      194        805 |  194   805 |     46278|       0.42       0.42|
+Info:       2000 |      337       1662 |  143   857 |     45586|       0.14       0.56|
+Info:       3000 |      503       2496 |  166   834 |     45351|       0.15       0.71|
+Info:       4000 |      616       3383 |  113   887 |     44927|       0.14       0.85|
+Info:       5000 |      803       4196 |  187   813 |     44358|       0.16       1.02|
+Info:       6000 |      973       5026 |  170   830 |     43926|       0.16       1.17|
+Info:       7000 |     1142       5857 |  169   831 |     43243|       0.16       1.33|
+Info:       8000 |     1276       6723 |  134   866 |     42649|       0.15       1.48|
+Info:       9000 |     1403       7596 |  127   873 |     42180|       0.14       1.62|
+Info:      10000 |     1589       8410 |  186   814 |     41545|       0.15       1.77|
+Info:      11000 |     1826       9173 |  237   763 |     41412|       0.13       1.90|
+Info:      12000 |     1949      10050 |  123   877 |     40912|       0.15       2.05|
+Info:      13000 |     2068      10931 |  119   881 |     40386|       0.13       2.18|
+Info:      14000 |     2223      11776 |  155   845 |     39922|       0.16       2.34|
+Info:      15000 |     2283      12716 |   60   940 |     41991|       0.25       2.59|
+Info:      16000 |     2315      13684 |   32   968 |     41064|       0.18       2.77|
+Info:      17000 |     2334      14665 |   19   981 |     40117|       0.16       2.93|
+Info:      18000 |     2343      15656 |    9   991 |     40023|       0.18       3.11|
+Info:      19000 |     2397      16602 |   54   946 |     40158|       0.21       3.32|
+Info:      20000 |     2501      17498 |  104   896 |     39588|       0.14       3.46|
+Info:      21000 |     2616      18383 |  115   885 |     39541|       0.13       3.59|
+Info:      22000 |     2694      19305 |   78   922 |     38766|       0.19       3.78|
+Info:      23000 |     2823      20176 |  129   871 |     38140|       0.12       3.90|
+Info:      24000 |     2943      21056 |  120   880 |     37612|       0.12       4.02|
+Info:      25000 |     3075      21924 |  132   868 |     36831|       0.12       4.14|
+Info:      26000 |     3270      22729 |  195   805 |     36519|       0.15       4.30|
+Info:      27000 |     3314      23685 |   44   956 |     39362|       0.15       4.45|
+Info:      28000 |     3338      24661 |   24   976 |     38427|       0.16       4.61|
+Info:      29000 |     3365      25634 |   27   973 |     37458|       0.14       4.75|
+Info:      30000 |     3382      26617 |   17   983 |     36488|       0.11       4.86|
+Info:      31000 |     3450      27549 |   68   932 |     37200|       0.12       4.98|
+Info:      32000 |     3519      28480 |   69   931 |     36711|       0.10       5.08|
+Info:      33000 |     3601      29398 |   82   918 |     38185|       0.15       5.23|
+Info:      34000 |     3606      30393 |    5   995 |     37194|       0.16       5.40|
+Info:      35000 |     3609      31390 |    3   997 |     37265|       0.12       5.51|
+Info:      36000 |     3625      32374 |   16   984 |     40027|       0.11       5.62|
+Info:      37000 |     3636      33363 |   11   989 |     39042|       0.15       5.78|
+Info:      38000 |     3640      34359 |    4   996 |     38046|       0.15       5.93|
+Info:      39000 |     3644      35355 |    4   996 |     37052|       0.13       6.06|
+Info:      40000 |     3719      36280 |   75   925 |     37820|       0.12       6.18|
+Info:      41000 |     3874      37125 |  155   845 |     37800|       0.17       6.34|
+Info:      42000 |     3968      38031 |   94   906 |     37336|       0.15       6.49|
+Info:      43000 |     4063      38936 |   95   905 |     36791|       0.12       6.61|
+Info:      44000 |     4130      39869 |   67   933 |     36597|       0.11       6.72|
+Info:      45000 |     4238      40761 |  108   892 |     36459|       0.11       6.83|
+Info:      46000 |     4383      41616 |  145   855 |     35909|       0.12       6.96|
+Info:      47000 |     4501      42498 |  118   882 |     35361|       0.12       7.08|
+Info:      48000 |     4595      43404 |   94   906 |     35235|       0.16       7.24|
+Info:      49000 |     4761      44238 |  166   834 |     35595|       0.13       7.37|
+Info:      50000 |     4785      45214 |   24   976 |     34642|       0.15       7.51|
+Info:      51000 |     4917      46082 |  132   868 |     34158|       0.13       7.65|
+Info:      52000 |     5125      46874 |  208   792 |     33568|       0.13       7.77|
+Info:      53000 |     5262      47737 |  137   863 |     33271|       0.14       7.92|
+Info:      54000 |     5452      48547 |  190   810 |     32652|       0.13       8.05|
+Info:      55000 |     5579      49420 |  127   873 |     32460|       0.14       8.19|
+Info:      56000 |     5724      50275 |  145   855 |     31983|       0.12       8.30|
+Info:      57000 |     5908      51091 |  184   816 |     31640|       0.14       8.44|
+Info:      58000 |     6138      51861 |  230   770 |     31335|       0.15       8.59|
+Info:      59000 |     6300      52699 |  162   838 |     31223|       0.12       8.72|
+Info:      60000 |     6519      53480 |  219   781 |     30935|       0.14       8.86|
+Info:      61000 |     6683      54316 |  164   836 |     30462|       0.14       9.00|
+Info:      62000 |     6927      55072 |  244   756 |     30023|       0.12       9.12|
+Info:      63000 |     7084      55915 |  157   843 |     30703|       0.17       9.29|
+Info:      64000 |     7096      56903 |   12   988 |     29719|       0.17       9.46|
+Info:      65000 |     7303      57696 |  207   793 |     29295|       0.14       9.59|
+Info:      66000 |     7532      58467 |  229   771 |     29029|       0.13       9.73|
+Info:      67000 |     7775      59224 |  243   757 |     28416|       0.15       9.87|
+Info:      68000 |     8040      59959 |  265   735 |     28135|       0.13      10.00|
+Info:      69000 |     8241      60758 |  201   799 |     27859|       0.14      10.14|
+Info:      70000 |     8462      61537 |  221   779 |     27555|       0.14      10.28|
+Info:      71000 |     8734      62265 |  272   728 |     27137|       0.14      10.42|
+Info:      72000 |     9059      62940 |  325   675 |     26678|       0.15      10.56|
+Info:      73000 |     9378      63621 |  319   681 |     26287|       0.13      10.69|
+Info:      74000 |     9601      64398 |  223   777 |     26067|       0.14      10.84|
+Info:      75000 |     9890      65109 |  289   711 |     25929|       0.16      11.00|
+Info:      76000 |    10241      65758 |  351   649 |     25426|       0.15      11.15|
+Info:      77000 |    10587      66412 |  346   654 |     25087|       0.14      11.29|
+Info:      78000 |    10925      67074 |  338   662 |     24800|       0.14      11.43|
+Info:      79000 |    11249      67750 |  324   676 |     24431|       0.15      11.58|
+Info:      80000 |    11490      68509 |  241   759 |     24186|       0.12      11.70|
+Info:      81000 |    11687      69312 |  197   803 |     24008|       0.13      11.83|
+Info:      82000 |    11965      70034 |  278   722 |     23684|       0.13      11.96|
+Info:      83000 |    12321      70678 |  356   644 |     23269|       0.15      12.11|
+Info:      84000 |    12598      71401 |  277   723 |     23266|       0.13      12.24|
+Info:      85000 |    12876      72123 |  278   722 |     22886|       0.15      12.39|
+Info:      86000 |    13220      72779 |  344   656 |     22466|       0.15      12.55|
+Info:      87000 |    13595      73404 |  375   625 |     22107|       0.16      12.70|
+Info:      88000 |    13813      74186 |  218   782 |     22003|       0.16      12.86|
+Info:      89000 |    14095      74904 |  282   718 |     21689|       0.15      13.01|
+Info:      90000 |    14411      75588 |  316   684 |     21438|       0.17      13.18|
+Info:      91000 |    14811      76188 |  400   600 |     21082|       0.16      13.33|
+Info:      92000 |    15198      76801 |  387   613 |     20680|       0.14      13.48|
+Info:      93000 |    15686      77313 |  488   512 |     20343|       0.17      13.64|
+Info:      94000 |    16068      77931 |  382   618 |     20050|       0.17      13.81|
+Info:      95000 |    16454      78545 |  386   614 |     19659|       0.16      13.97|
+Info:      96000 |    16938      79061 |  484   516 |     19329|       0.16      14.14|
+Info:      97000 |    17426      79573 |  488   512 |     19043|       0.17      14.31|
+Info:      98000 |    17795      80204 |  369   631 |     18938|       0.19      14.50|
+Info:      99000 |    18265      80734 |  470   530 |     18556|       0.17      14.67|
+Info:     100000 |    18743      81256 |  478   522 |     18207|       0.16      14.83|
+Info:     101000 |    19220      81779 |  477   523 |     17886|       0.18      15.01|
+Info:     102000 |    19654      82345 |  434   566 |     17561|       0.16      15.17|
+Info:     103000 |    20007      82992 |  353   647 |     17399|       0.16      15.33|
+Info:     104000 |    20562      83437 |  555   445 |     17144|       0.16      15.49|
+Info:     105000 |    21066      83933 |  504   496 |     16955|       0.17      15.66|
+Info:     106000 |    21649      84350 |  583   417 |     16673|       0.15      15.81|
+Info:     107000 |    22222      84777 |  573   427 |     16423|       0.17      15.98|
+Info:     108000 |    22705      85294 |  483   517 |     16194|       0.15      16.14|
+Info:     109000 |    23203      85796 |  498   502 |     15899|       0.17      16.31|
+Info:     110000 |    23711      86288 |  508   492 |     15590|       0.17      16.47|
+Info:     111000 |    24231      86768 |  520   480 |     15248|       0.15      16.62|
+Info:     112000 |    24666      87333 |  435   565 |     15003|       0.15      16.77|
+Info:     113000 |    25163      87836 |  497   503 |     14705|       0.15      16.92|
+Info:     114000 |    25617      88377 |  454   541 |     14332|       0.16      17.08|
+Info:     115000 |    26000      88909 |  383   532 |     13924|       0.14      17.22|
+Info:     116000 |    26368      89397 |  368   488 |     13439|       0.12      17.34|
+Info:     117000 |    26486      90273 |  118   876 |     13673|       0.15      17.49|
+Info:     118000 |    26731      91028 |  245   755 |     13880|       0.17      17.66|
+Info:     119000 |    27017      91704 |  286   676 |     13286|       0.17      17.83|
+Info:     120000 |    27474      92109 |  457   405 |     12803|       0.15      17.98|
+Info:     121000 |    27852      92567 |  378   458 |     12241|       0.12      18.10|
+Info:     122000 |    28299      92998 |  447   431 |     11750|       0.13      18.23|
+Info:     123000 |    28744      93435 |  445   437 |     11284|       0.13      18.36|
+Info:     124000 |    29189      93863 |  445   428 |     10780|       0.13      18.49|
+Info:     125000 |    29667      94276 |  478   413 |     10313|       0.13      18.62|
+Info:     126000 |    30151      94718 |  484   442 |      9935|       0.16      18.78|
+Info:     127000 |    30611      95221 |  460   503 |      9851|       0.17      18.96|
+Info:     128000 |    31045      95756 |  434   535 |      9427|       0.17      19.12|
+Info:     129000 |    31414      96347 |  369   591 |      9011|       0.13      19.25|
+Info:     130000 |    31538      97219 |  124   872 |      8186|       0.08      19.33|
+Info:     131000 |    31554      98190 |   16   971 |      7202|       0.05      19.37|
+Info:     132000 |    31560      99170 |    6   980 |      6208|       0.04      19.42|
+Info:     133000 |    31588     100134 |   28   964 |      5266|       0.05      19.47|
+Info:     134000 |    31592     101115 |    4   981 |      4271|       0.05      19.52|
+Info:     135000 |    31596     102102 |    4   987 |      3275|       0.05      19.56|
+Info:     136000 |    31611     103064 |   15   962 |      2296|       0.07      19.63|
+Info:     137000 |    31760     103865 |  149   801 |      1614|       0.13      19.75|
+Info:     138000 |    31770     104664 |   10   799 |       631|       0.24      20.00|
+Info:     138754 |    31821     105198 |   51   534 |         0|       0.34      20.33|
+Info: Routing complete.
+Info: Router1 time 20.33s
+Info: Checksum: 0xee6fe031
+
+Info: Critical path report for clock '$glbnet$clk$TRELLIS_IO_IN' (posedge -> posedge):
+Info:       type curr  total name
+Info:   clk-to-q  5.83  5.83 Source u_imem.imem.0.0.DOB3
+Info:    routing  1.47  7.30 Net u_control.rs1_addr[1] (44,22) -> (44,16)
+Info:                          Sink u_sreg.mem.1.0$DPRAM_COMB1.B
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.24  7.54 Source u_sreg.mem.1.0$DPRAM_COMB1.F
+Info:    routing  0.47  8.01 Net u_sreg.mem.1.0_DO_1[0] (44,16) -> (43,16)
+Info:                          Sink u_sreg.mem.1.1_DO_1_LUT4_A_Z_LUT4_Z.A
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.24  8.24 Source u_sreg.mem.1.1_DO_1_LUT4_A_Z_LUT4_Z.F
+Info:    routing  1.43  9.68 Net u_sreg.mem.1.1_DO_1_LUT4_A_Z[3] (43,16) -> (38,17)
+Info:                          Sink u_dmem.mem.0.296_DO_CCU2C_S1_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.B
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.45  10.13 Source u_dmem.mem.0.296_DO_CCU2C_S1_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCO
+Info:    routing  0.00  10.13 Net u_dmem.mem.0.296_DO_CCU2C_S1_CIN_CCU2C_COUT_CIN (38,17) -> (38,17)
+Info:                          Sink u_dmem.mem.0.296_DO_CCU2C_S1_CIN_CCU2C_COUT$CCU2_COMB0.FCI
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/project/rtl/control_unit.v:62.24-62.44
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/arith_map_ccu2c.v:74.7-80.4
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/ccu2c_sim.vh:9.9-9.13
+Info:      logic  0.44  10.57 Source u_dmem.mem.0.296_DO_CCU2C_S1_CIN_CCU2C_COUT$CCU2_COMB0.F
+Info:    routing  3.37  13.94 Net u_dmem.mem.0.296_DO_CCU2C_S1_CIN_CCU2C_COUT_S0[1] (38,17) -> (9,27)
+Info:                          Sink u_dmem.mem.0.321$DPRAM_COMB0.C
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.24  14.18 Source u_dmem.mem.0.321$DPRAM_COMB0.F
+Info:    routing  0.59  14.77 Net u_dmem.mem.0.289_DO[0] (9,27) -> (9,27)
+Info:                          Sink u_dmem.mem.0.289_DO_LUT4_B.A
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.24  15.01 Source u_dmem.mem.0.289_DO_LUT4_B.F
+Info:    routing  1.13  16.14 Net u_dmem.mem.0.289_DO_LUT4_B_Z[3] (9,27) -> (10,29)
+Info:                          Sink u_dmem.mem.0.129_DO_LUT4_B_Z_LUT4_Z.D
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.24  16.37 Source u_dmem.mem.0.129_DO_LUT4_B_Z_LUT4_Z.F
+Info:    routing  0.42  16.79 Net u_dmem.mem.0.129_DO_LUT4_B_Z[3] (10,29) -> (10,29)
+Info:                          Sink u_dmem.mem.0.385_DO_LUT4_B_Z_LUT4_Z_2.D
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.24  17.03 Source u_dmem.mem.0.385_DO_LUT4_B_Z_LUT4_Z_2.F
+Info:    routing  0.76  17.79 Net u_dmem.mem.0.385_DO_LUT4_B_Z[4] (10,29) -> (8,28)
+Info:                          Sink mem_rdata_PFUMX_Z_2_BLUT_LUT4_Z.M
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.26  18.05 Source mem_rdata_PFUMX_Z_2_BLUT_LUT4_Z.OFX
+Info:    routing  1.35  19.40 Net mem_rdata[4] (8,28) -> (12,21)
+Info:                          Sink vector_wb_data_TRELLIS_FF_Q_5_DI_PFUMX_Z_BLUT_LUT4_Z.M
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.26  19.65 Source vector_wb_data_TRELLIS_FF_Q_5_DI_PFUMX_Z_BLUT_LUT4_Z.OFX
+Info:    routing  0.38  20.03 Net vector_wb_data_TRELLIS_FF_Q_5_DI (12,21) -> (12,21)
+Info:                          Sink vector_wb_data_TRELLIS_FF_Q_5.M
+Info:      setup  0.00  20.03 Source vector_wb_data_TRELLIS_FF_Q_5.M
+Info: 8.65 ns logic, 11.38 ns routing
+
+Info: Critical path report for cross-domain path '<async>' -> 'posedge $glbnet$clk$TRELLIS_IO_IN':
+Info:       type curr  total name
+Info:     source  0.00  0.00 Source rst$tr_io.O
+Info:    routing  5.58  5.58 Net rst$TRELLIS_IO_IN (0,56) -> (45,14)
+Info:                          Sink u_vreg.mem.1.0_DO_LUT4_Z_1.D
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.24  5.82 Source u_vreg.mem.1.0_DO_LUT4_Z_1.F
+Info:    routing  1.59  7.40 Net u_vreg.mem.0.7_DO_CCU2C_S1_S0_LUT4_D_Z_LUT4_Z_D_LUT4_Z_C[3] (45,14) -> (35,20)
+Info:                          Sink u_sreg.mem.0.0_DO_L6MUX21_Z_D1_L6MUX21_Z_D0_PFUMX_Z_ALUT_LUT4_Z.M
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.26  7.66 Source u_sreg.mem.0.0_DO_L6MUX21_Z_D1_L6MUX21_Z_D0_PFUMX_Z_ALUT_LUT4_Z.OFX
+Info:    routing  1.98  9.64 Net u_sreg.mem.0.0_DO[6] (35,20) -> (24,16)
+Info:                          Sink u_vreg.mem.0.17_DO_1_LUT4_Z_2.D
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.24  9.88 Source u_vreg.mem.0.17_DO_1_LUT4_Z_2.F
+Info:    routing  1.39  11.26 Net u_vreg.mem.0.17_DO_1[1] (24,16) -> (21,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.B
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.45  11.71 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCO
+Info:    routing  0.00  11.71 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_FCI_INT (21,15) -> (21,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCI
+Info:      logic  0.00  11.71 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCO
+Info:    routing  0.00  11.71 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN (21,15) -> (22,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCI
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/project/rtl/lane_alu.v:22.25-22.30
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/arith_map_ccu2c.v:74.7-80.4
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/ccu2c_sim.vh:9.9-9.13
+Info:      logic  0.07  11.78 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCO
+Info:    routing  0.00  11.78 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_FCI_INT (22,15) -> (22,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCI
+Info:      logic  0.00  11.78 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCO
+Info:    routing  0.00  11.78 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN (22,15) -> (22,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCI
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/project/rtl/lane_alu.v:22.25-22.30
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/arith_map_ccu2c.v:74.7-80.4
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/ccu2c_sim.vh:9.9-9.13
+Info:      logic  0.07  11.85 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCO
+Info:    routing  0.00  11.85 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_FCI_INT (22,15) -> (22,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCI
+Info:      logic  0.00  11.85 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCO
+Info:    routing  0.00  11.85 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN (22,15) -> (22,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCI
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/project/rtl/lane_alu.v:22.25-22.30
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/arith_map_ccu2c.v:74.7-80.4
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/ccu2c_sim.vh:9.9-9.13
+Info:      logic  0.07  11.92 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCO
+Info:    routing  0.00  11.92 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_FCI_INT (22,15) -> (22,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCI
+Info:      logic  0.00  11.92 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCO
+Info:    routing  0.00  11.92 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN (22,15) -> (22,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCI
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/project/rtl/lane_alu.v:22.25-22.30
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/arith_map_ccu2c.v:74.7-80.4
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/ccu2c_sim.vh:9.9-9.13
+Info:      logic  0.07  11.99 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCO
+Info:    routing  0.00  11.99 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_FCI_INT (22,15) -> (22,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCI
+Info:      logic  0.00  11.99 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCO
+Info:    routing  0.00  11.99 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN (22,15) -> (23,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCI
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/project/rtl/lane_alu.v:22.25-22.30
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/arith_map_ccu2c.v:74.7-80.4
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/ccu2c_sim.vh:9.9-9.13
+Info:      logic  0.07  12.06 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCO
+Info:    routing  0.00  12.06 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_FCI_INT (23,15) -> (23,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCI
+Info:      logic  0.00  12.06 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCO
+Info:    routing  0.00  12.06 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN (23,15) -> (23,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCI
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/project/rtl/lane_alu.v:22.25-22.30
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/arith_map_ccu2c.v:74.7-80.4
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/ccu2c_sim.vh:9.9-9.13
+Info:      logic  0.07  12.13 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCO
+Info:    routing  0.00  12.13 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_FCI_INT (23,15) -> (23,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCI
+Info:      logic  0.00  12.13 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCO
+Info:    routing  0.00  12.13 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN (23,15) -> (23,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCI
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/project/rtl/lane_alu.v:22.25-22.30
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/arith_map_ccu2c.v:74.7-80.4
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/ccu2c_sim.vh:9.9-9.13
+Info:      logic  0.07  12.20 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCO
+Info:    routing  0.00  12.20 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_FCI_INT (23,15) -> (23,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCI
+Info:      logic  0.00  12.20 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCO
+Info:    routing  0.00  12.20 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN (23,15) -> (23,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCI
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/project/rtl/lane_alu.v:22.25-22.30
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/arith_map_ccu2c.v:74.7-80.4
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/ccu2c_sim.vh:9.9-9.13
+Info:      logic  0.07  12.28 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCO
+Info:    routing  0.00  12.28 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_FCI_INT (23,15) -> (23,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCI
+Info:      logic  0.00  12.28 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCO
+Info:    routing  0.00  12.28 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN (23,15) -> (24,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCI
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/project/rtl/lane_alu.v:22.25-22.30
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/arith_map_ccu2c.v:74.7-80.4
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/ccu2c_sim.vh:9.9-9.13
+Info:      logic  0.07  12.35 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCO
+Info:    routing  0.00  12.35 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_FCI_INT (24,15) -> (24,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCI
+Info:      logic  0.00  12.35 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCO
+Info:    routing  0.00  12.35 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT_CIN (24,15) -> (24,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCI
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/project/rtl/lane_alu.v:22.25-22.30
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/arith_map_ccu2c.v:74.7-80.4
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/ccu2c_sim.vh:9.9-9.13
+Info:      logic  0.07  12.42 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCO
+Info:    routing  0.00  12.42 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_FCI_INT (24,15) -> (24,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCI
+Info:      logic  0.00  12.42 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCO
+Info:    routing  0.00  12.42 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT_CIN (24,15) -> (24,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCI
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/project/rtl/lane_alu.v:22.25-22.30
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/arith_map_ccu2c.v:74.7-80.4
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/ccu2c_sim.vh:9.9-9.13
+Info:      logic  0.07  12.49 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB0.FCO
+Info:    routing  0.00  12.49 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_FCI_INT (24,15) -> (24,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCI
+Info:      logic  0.00  12.49 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN_CCU2C_COUT$CCU2_COMB1.FCO
+Info:    routing  0.00  12.49 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_CIN (24,15) -> (24,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT$CCU2_COMB0.FCI
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/project/rtl/lane_alu.v:22.25-22.30
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/arith_map_ccu2c.v:74.7-80.4
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/ccu2c_sim.vh:9.9-9.13
+Info:      logic  0.07  12.56 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT$CCU2_COMB0.FCO
+Info:    routing  0.00  12.56 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT$CCU2_FCI_INT (24,15) -> (24,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT$CCU2_COMB1.FCI
+Info:      logic  0.00  12.56 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT$CCU2_COMB1.FCO
+Info:    routing  0.00  12.56 Net $nextpnr_CCU2C_8$CIN (24,15) -> (25,15)
+Info:                          Sink $nextpnr_CCU2C_8$CCU2_COMB0.FCI
+Info:      logic  0.44  13.00 Source $nextpnr_CCU2C_8$CCU2_COMB0.F
+Info:    routing  0.83  13.83 Net u_vreg.mem.0.23_DO_1[4] (25,15) -> (25,15)
+Info:                          Sink $nextpnr_CCU2C_8$CCU2_COMB1.A
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.45  14.28 Source $nextpnr_CCU2C_8$CCU2_COMB1.FCO
+Info:    routing  0.00  14.28 Net $nextpnr_CCU2C_8$COUT (25,15) -> (25,15)
+Info:                          Sink u_vreg.mem.0.23_DO_1_CCU2C_COUT_S1_LUT4_D_Z_CCU2C_S1_COUT_CCU2C_CIN_S0_CCU2C_S0$CCU2_COMB0.FCI
+Info:      logic  0.44  14.72 Source u_vreg.mem.0.23_DO_1_CCU2C_COUT_S1_LUT4_D_Z_CCU2C_S1_COUT_CCU2C_CIN_S0_CCU2C_S0$CCU2_COMB0.F
+Info:    routing  1.58  16.30 Net u_vreg.mem.0.23_DO_1_CCU2C_COUT_S1_LUT4_D_Z_CCU2C_S1_COUT_CCU2C_CIN_S0[4] (25,15) -> (32,20)
+Info:                          Sink vector_wb_data_TRELLIS_FF_Q_95_DI_L6MUX21_Z_D1_L6MUX21_Z_D1_PFUMX_Z_BLUT_LUT4_Z.M
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:108.23-108.24
+Info:      logic  0.26  16.56 Source vector_wb_data_TRELLIS_FF_Q_95_DI_L6MUX21_Z_D1_L6MUX21_Z_D1_PFUMX_Z_BLUT_LUT4_Z.OFX
+Info:    routing  0.00  16.56 Net vector_wb_data_TRELLIS_FF_Q_95_DI_L6MUX21_Z_D1_L6MUX21_Z_D1 (32,20) -> (32,20)
+Info:                          Sink vector_wb_data_TRELLIS_FF_Q_95_DI_L6MUX21_Z_D1_L6MUX21_Z_D1_PFUMX_Z_ALUT_LUT4_Z.FXB
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:157.62-157.64
+Info:      logic  0.24  16.80 Source vector_wb_data_TRELLIS_FF_Q_95_DI_L6MUX21_Z_D1_L6MUX21_Z_D1_PFUMX_Z_ALUT_LUT4_Z.OFX
+Info:    routing  0.00  16.80 Net vector_wb_data_TRELLIS_FF_Q_95_DI_L6MUX21_Z_D1 (32,20) -> (32,20)
+Info:                          Sink vector_wb_data_TRELLIS_FF_Q_95_DI_L6MUX21_Z_D1_L6MUX21_Z_D0_PFUMX_Z_ALUT_LUT4_Z.FXB
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/oss-cad-suite/libexec/../share/yosys/lattice/cells_map_trellis.v:157.70-157.72
+Info:      logic  0.24  17.04 Source vector_wb_data_TRELLIS_FF_Q_95_DI_L6MUX21_Z_D1_L6MUX21_Z_D0_PFUMX_Z_ALUT_LUT4_Z.OFX
+Info:    routing  0.37  17.41 Net vector_wb_data_TRELLIS_FF_Q_95_DI (32,20) -> (32,20)
+Info:                          Sink vector_wb_data_TRELLIS_FF_Q_95.M
+Info:      setup  0.00  17.41 Source vector_wb_data_TRELLIS_FF_Q_95.M
+Info: 4.10 ns logic, 13.31 ns routing
+
+Info: Critical path report for cross-domain path 'posedge $glbnet$clk$TRELLIS_IO_IN' -> '<async>':
+Info:       type curr  total name
+Info:   clk-to-q  0.52  0.52 Source pc_TRELLIS_FF_Q_15.Q
+Info:    routing  8.25  8.78 Net pc[14]$TRELLIS_IO_OUT (54,17) -> (126,86)
+Info:                          Sink pc[14]$tr_io.I
+Info:                          Defined in:
+Info:                               /private/tmp/simd-oss.p7jVn7/project/rtl/control_unit.v:8.24-8.26
+Info: 0.52 ns logic, 8.25 ns routing
+
+Warning: Max frequency for clock '$glbnet$clk$TRELLIS_IO_IN': 49.93 MHz (FAIL at 50.00 MHz)
+
+Info: Max delay <async>                           -> posedge $glbnet$clk$TRELLIS_IO_IN: 17.41 ns
+Info: Max delay posedge $glbnet$clk$TRELLIS_IO_IN -> <async>                          : 8.78 ns
+
+Info: Slack histogram:
+Info:  legend: times are in ps
+Info:          * represents 85 endpoint(s)
+Info:          + represents [1,85) endpoint(s)
+Info: [   -28,    920) |+
+Info: [   920,   1868) |+
+Info: [  1868,   2816) |+
+Info: [  2816,   3764) |*********+
+Info: [  3764,   4712) |************+
+Info: [  4712,   5660) |**+
+Info: [  5660,   6608) |***************+
+Info: [  6608,   7556) |************************************************************ 
+Info: [  7556,   8504) |**************************************+
+Info: [  8504,   9452) |************+
+Info: [  9452,  10400) |+
+Info: [ 10400,  11348) |**+
+Info: [ 11348,  12296) |******+
+Info: [ 12296,  13244) |**+
+Info: [ 13244,  14192) | 
+Info: [ 14192,  15140) |+
+Info: [ 15140,  16088) |+
+Info: [ 16088,  17036) |+
+Info: [ 17036,  17984) |*+
+Info: [ 17984,  18932) |**+
+1 warning, 0 errors
+
+Info: Program finished normally.

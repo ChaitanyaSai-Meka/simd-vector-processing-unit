@@ -27,7 +27,8 @@ A parameterized **Single Instruction, Multiple Data (SIMD)** vector processing u
 | Measured results | [`report/results.csv`](report/results.csv) — reproduced by `make bench` |
 | Analysis and plots | [`report/analysis.md`](report/analysis.md), [`report/figures/`](report/figures/) |
 | Design docs | [`docs/`](docs/) — spec, ISA, interfaces, control FSM, per-module docs |
-| Synthesis flow | [`synth/run_synth.tcl`](synth/run_synth.tcl), [`synth/parse_reports.py`](synth/parse_reports.py) — Vivado, Artix-7 |
+| Open-source FPGA results | [Runner](synth/run_oss_synth.py), [results CSV](synth/oss_results.csv), [tool reports](synth/oss_reports/) |
+| Optional Vivado flow | [`synth/run_synth.tcl`](synth/run_synth.tcl), [`synth/parse_reports.py`](synth/parse_reports.py) — Vivado, Artix-7 |
 
 ---
 
@@ -39,7 +40,7 @@ A parameterized **Single Instruction, Multiple Data (SIMD)** vector processing u
 | **Kasula Lalithendra** | Architecture & Integration | Spec, interfaces, block diagram, `vpu_demo_top`, Makefile | Phase I audit, `vpu_top` integration, smoke test, top-level docs |
 | **Jagruthi Pulumati** | Control & Memory | ISA, control FSM design, `dmem`, `pc_imem` + tests | `control_unit` RTL and 577-check testbench, ISA / FSM docs |
 | **Polana Rakshita** | Verification | `golden.py`, unit testbenches, verification plan | Assembler, benchmark programs, system testbench, `run_bench.py` |
-| **Chaitanya Sai Meka** | Report & Synthesis | IEEE report, literature review | Vivado flow and parser, scaling analysis and plots, Phase II report |
+| **Chaitanya Sai Meka** | Report & Synthesis | IEEE report, literature review | Vivado scripts and parser, Yosys/nextpnr FPGA characterization, resource and timing analysis, estimated throughput, cycle-scaling plots, Phase II report |
 
 ---
 
@@ -167,9 +168,38 @@ The counts fit `cycles = fixed + per_group × (64 / LANES)`: B1 = 8 + 16 per gro
 
 The run ends with `ALL PASS`.
 
-### FPGA synthesis
+### FPGA results
 
-The Vivado flow (`synth/run_synth.tcl` + `synth/parse_reports.py`) synthesizes and routes `vpu_top` on the Artix-7 `xc7a35tcpg236-1` at each lane count. The sweep has not been run yet, so area and maximum clock frequency are future work.
+**Routed ECP5 (LFE5U-85F).** Yosys and nextpnr ran on macOS with a fixed 50 MHz target and placement seed 1. All four builds routed successfully. The four- and eight-lane builds missed the 50 MHz timing target.
+
+| Lanes | ECP5 combinational cells | Flip-flops | BRAM | Routed Fmax (MHz) |
+| ---: | ---: | ---: | ---: | ---: |
+| 1 | 2911 | 164 | 1 | 54.07 |
+| 2 | 4988 | 196 | 1 | 50.85 |
+| 4 | 9868 | 260 | 1 | 49.93 |
+| 8 | 19304 | 388 | 1 | 45.52 |
+
+**Artix-7 synthesis estimates.** Yosys reported the following resource counts. Routed timing and Fmax are unavailable for this flow. ECP5 combinational cells are based on four-input logic, while Artix-7 uses six-input LUTs. Compare resource scaling within each family.
+
+| Lanes | Artix-7 logic LUTs | Flip-flops | LUTRAM cells | BRAM |
+| ---: | ---: | ---: | ---: | ---: |
+| 1 | 887 | 228 | 56 | 0 |
+| 2 | 1355 | 260 | 98 | 0 |
+| 4 | 2291 | 324 | 184 | 0 |
+| 8 | 4163 | 452 | 354 | 0 |
+
+**Estimated ECP5 throughput.** Each value is `elements / simulated cycles × routed Fmax`, expressed in million elements per second. It combines simulation and routed timing estimates.
+
+| Lanes | B1 | B2 | B3 |
+| ---: | ---: | ---: | ---: |
+| 1 | 3.35 | 1.73 | 2.41 |
+| 2 | 6.26 | 3.23 | 4.44 |
+| 4 | 12.10 | 6.27 | 8.39 |
+| 8 | 21.42 | 11.12 | 14.21 |
+
+At eight lanes, B1's **7.59× cycle speedup** translates to **6.39× estimated throughput speedup** because routed Fmax falls from 54.07 to 45.52 MHz. The corresponding throughput speedups for B2 and B3 are 6.42× and 5.90×.
+
+[Logic utilization](report/figures/ecp5_logic_cells_vs_lanes.pdf) · [Routed Fmax](report/figures/ecp5_fmax_vs_lanes.pdf) · [Estimated throughput](report/figures/ecp5_throughput_vs_lanes.pdf)
 
 ---
 
@@ -265,10 +295,20 @@ python3 verif/golden.py --bench B1 --lanes 4 --n 64    # one benchmark
 python3 verif/golden.py --all                          # all benchmarks, all lane counts
 ```
 
-### Synthesis (requires Vivado)
+### Synthesis and figures
+
+With [OSS CAD Suite](https://github.com/YosysHQ/oss-cad-suite-build/releases) installed, run the open-source sweep and regenerate the plots. The plot script requires ReportLab.
+
 ```bash
-vivado -mode batch -source synth/run_synth.tcl   # vpu_top at LANES = 1, 2, 4, 8
-python3 synth/parse_reports.py                    # collect utilization and timing
+python3 synth/run_oss_synth.py   # accepts --tools /path/to/oss-cad-suite/bin
+python3 report/plot.py
+```
+
+For a separate routed Artix-7 run where Vivado is available:
+
+```bash
+vivado -mode batch -source synth/run_synth.tcl
+python3 synth/parse_reports.py
 ```
 
 ---
