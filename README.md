@@ -10,7 +10,9 @@ A parameterized **Single Instruction, Multiple Data (SIMD)** vector processing u
 ## Submissions
 
 > [!IMPORTANT]
-> **Phase II — Final IEEE Report (PDF):** [report/SIMD_VPU_Phase2_Report.pdf](report/SIMD_VPU_Phase2_Report.pdf)
+> **Final IEEE Report (PDF):** [report/SIMD_VPU_Final_Report.pdf](report/SIMD_VPU_Final_Report.pdf)
+>
+> **Presentation slides:** [report/SIMD_VPU_Presentation.pptx](report/SIMD_VPU_Presentation.pptx)
 >
 > **Phase I — IEEE Report (PDF):** [report/SIMD_VPU_Phase1_Report.pdf](report/SIMD_VPU_Phase1_Report.pdf)
 >

@@ -21,7 +21,7 @@
 \begin{document}
 
 \title{Design and Cycle-Count Evaluation of a Parameterized SIMD Vector Processing Unit\\
-{\large Phase~II Report --- Team LANE BREAKERS}}
+{\large Final Report --- Team LANE BREAKERS}}
 
 \author{
   \IEEEauthorblockN{Dhanvin Vadlamudi}
@@ -486,6 +486,26 @@ throughput speedup because the wider core has a lower Fmax.
 For B2 and B3 the eight-lane throughput ratios are \(6.42\times\)
 and \(5.90\times\), respectively.
 
+\subsection{Limitations and future work}
+
+\begin{itemize}
+  \item \emph{No pipeline.} Each instruction takes two or three cycles.
+        A three-stage pipeline could approach one instruction per cycle,
+        but it would need forwarding or stalls for the scalar loop
+        registers.
+  \item \emph{Base ISA only.} There is no vector multiply and no
+        cross-lane operation such as a reduction or shuffle. A
+        \texttt{VMUL} could use the FPGA's hardware multipliers.
+  \item \emph{Fixed width.} The lane count is set when the hardware is
+        built, unlike the run-time vector length of RISC-V V.
+  \item \emph{Memory mapping.} The memories read asynchronously, so they
+        map to distributed LUT RAM and logic rather than block RAM.
+        Synchronous-read memories would let synthesis use block RAM.
+  \item \emph{Timing and measurement.} The four- and eight-lane builds
+        miss the 50\,MHz target. Artix-7 was not routed, and no design
+        was run on a board, so throughput is estimated, not measured.
+\end{itemize}
+
 \section{Individual Contributions}
 Each member's work is visible in the repository's commit history.
 
@@ -529,8 +549,9 @@ and signed clamping close to ideal cycle scaling. The bitwise mix showed
 the cost of fixed setup as the loop shortened. The routed ECP5 sweep showed
 that throughput continues to improve despite the lower Fmax at wider
 configurations. At eight lanes, estimated throughput was 5.90--6.42 times
-the one-lane baseline. A routed Artix-7 run or a board measurement would
-extend the comparison.
+the one-lane baseline. Next steps are pipelining, a vector multiply,
+synchronous block-RAM memories, and a routed Artix-7 run with a board
+measurement.
 
 \bibliographystyle{IEEEtran}
 \bibliography{refs}
