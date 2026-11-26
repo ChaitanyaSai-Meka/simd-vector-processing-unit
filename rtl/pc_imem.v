@@ -1,25 +1,20 @@
-// pc_imem.v
-// Program counter and instruction memory.
-// When enabled, the PC advances one word or loads the branch target.
-// Instruction memory supports optional hex-file preload.
-// Synchronous reset sets PC to 0. Asynchronous instruction read.
-// Part of: SIMD Vector Processing Unit, LANE BREAKERS
+// pc_imem.v - program counter plus instruction memory with async read and sync reset.
 // Owner: Jagruthi Pulumati (Role 3, Control and Memory)
 
 `timescale 1ns/1ps
 
 module pc_imem #(
     parameter IMEM_DEPTH = 256,
-    parameter ADDR_W     = 8,   // ceil(log2(IMEM_DEPTH))
-    parameter INIT_FILE  = ""  // optional hex file, one instruction per word
+    parameter ADDR_W     = 8,   // log2(IMEM_DEPTH)
+    parameter INIT_FILE  = ""  // optional hex preload, one instruction per line
 ) (
     input              clk,
-    input              rst,           // synchronous active-high reset; sets PC to 0
-    input              pc_en,         // 1 = update PC on the rising edge
-    input              branch_en,     // 1 = select branch_target when pc_en=1
-    input  [31:0]      branch_target, // absolute branch target address
-    output reg [31:0]  pc,            // current program counter (word address)
-    output [31:0]      instr          // instruction at current PC (combinational)
+    input              rst,           // sync reset, PC <= 0
+    input              pc_en,         // update PC this edge
+    input              branch_en,     // take branch_target when pc_en
+    input  [31:0]      branch_target, // absolute word address
+    output reg [31:0]  pc,            // word address
+    output [31:0]      instr          // imem[pc], combinational
 );
 
     reg [31:0] imem [0:IMEM_DEPTH-1];
@@ -30,7 +25,7 @@ module pc_imem #(
             $readmemh(INIT_FILE, imem);
     end
 
-    // Synchronous PC update
+    // PC loads the branch target or advances by one when pc_en is high, else holds.
     always @(posedge clk) begin
         if (rst)
             pc <= 32'b0;
@@ -40,7 +35,6 @@ module pc_imem #(
             else
                 pc <= pc + 32'b1;
         end
-        // If pc_en is deasserted, PC holds its value.
     end
 
     // Asynchronous instruction read
