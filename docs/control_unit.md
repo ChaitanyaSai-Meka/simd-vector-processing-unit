@@ -32,4 +32,4 @@ iverilog -g2001 -Wall -s control_unit_tb -o /tmp/control_unit_tb.vvp \
 vvp /tmp/control_unit_tb.vvp
 ```
 
-The testbench checks the ISA control word cycle by cycle for every required opcode, including both forms of each vector ALU opcode. It exercises the actual PC, scalar register file, and data memory ports. It checks signed offsets, taken and untaken branches, HALT, and reset during pending writes. Vector ALU results are covered separately by Phase I verification.
+It also runs as part of `make test`. The testbench checks the ISA control word cycle by cycle for every required opcode, including both forms of each vector ALU opcode. It exercises the actual PC, scalar register file, and data memory ports. It checks signed offsets, taken and untaken branches, HALT, and reset during pending writes. Vector ALU results are covered separately by Phase I verification.

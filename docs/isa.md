@@ -1,6 +1,7 @@
 # Instruction Set Architecture (ISA) — SIMD Vector Processing Unit
 
-**File:** `docs/isa.md`
+Encoding, opcodes and cycle counts for every VPU instruction.
+
 **Owner:** Jagruthi Pulumati (Role 3, Control and Memory)
 
 ---

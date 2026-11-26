@@ -1,5 +1,7 @@
 # Control FSM
 
+State diagram and per-instruction control table for [`control_unit.v`](../rtl/control_unit.v).
+
 The VPU issues one instruction at a time. A two-bit state register controls the three execution phases, and a separate flag holds the machine after HALT.
 
 ```mermaid
