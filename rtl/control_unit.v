@@ -1,4 +1,5 @@
-// Phase II instruction decoder and three-state controller.
+// control_unit.v - FETCH/DECODE_EX/WRITEBACK controller that decodes each instruction into datapath controls.
+// Owner: Jagruthi Pulumati (Role 3, Control and Memory)
 `timescale 1ns/1ps
 
 module control_unit (
@@ -31,10 +32,12 @@ module control_unit (
     output reg [31:0]  cycle_count,
     output reg [31:0]  instr_count
 );
+    // FSM states
     localparam [1:0] FETCH     = 2'b00;
     localparam [1:0] DECODE_EX = 2'b01;
     localparam [1:0] WRITEBACK = 2'b10;
 
+    // Opcodes the decoder needs by name (see docs/isa.md)
     localparam [5:0] OP_VSRL  = 6'h08;
     localparam [5:0] OP_VLD   = 6'h10;
     localparam [5:0] OP_VST   = 6'h11;
@@ -44,12 +47,13 @@ module control_unit (
     localparam [5:0] OP_HALT  = 6'h3f;
 
     reg [1:0] state;
-    reg [31:0] saved_instr;
+    reg [31:0] saved_instr;   // latched in FETCH, drives decode until the next FETCH
 
     wire [5:0] opcode = saved_instr[31:26];
     wire is_vector_alu = (opcode <= OP_VSRL);
     wire is_scalar_alu = (opcode == OP_SADDI) || (opcode == OP_SLI);
     wire writes_vector = is_vector_alu || (opcode == OP_VLD);
+    // Sign-extended 16-bit immediate shared by loads, stores, SADDI, SLI and BNE.
     wire [31:0] immediate = {{16{saved_instr[15]}}, saved_instr[15:0]};
 
     // Store data uses the destination field; the base register still uses rs1.
@@ -62,6 +66,7 @@ module control_unit (
     assign dmem_addr = rs1_data + immediate;
     assign branch_target = pc + immediate;
 
+    // Combinational control word, all low by default.
     always @* begin
         alu_op = 4'b0;
         opb_sel = 1'b0;
@@ -97,6 +102,7 @@ module control_unit (
         end
     end
 
+    // State, latched instruction, scalar result and counters.
     always @(posedge clk) begin
         if (rst) begin
             state <= FETCH;
