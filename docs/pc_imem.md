@@ -1,9 +1,8 @@
 # pc_imem — Program Counter and Instruction Memory
 
-**File:** `rtl/pc_imem.v`
-**Owner:** Jagruthi Pulumati (Role 3, Control and Memory)
+Holds the PC and returns the instruction at that address in the same cycle.
 
----
+**File:** [`rtl/pc_imem.v`](../rtl/pc_imem.v) · **Owner:** Jagruthi Pulumati (Role 3, Control and Memory)
 
 ## What it does
 
@@ -38,3 +37,7 @@ Next cycle: `instr = imem[2]` — execution continues from address 2.
 ## Worked example: sequential execution
 
 PC=0,1,2,3... At the end of DECODE/EXECUTE for each sequential instruction: `pc_en=1`, `branch_en=0` → `pc ← pc + 1`.
+
+## Verification
+
+[`tb/pc_imem_tb.v`](../tb/pc_imem_tb.v) runs as part of `make test`. It checks reset, sequential advance, hold with `pc_en=0`, a taken branch, and reset mid-program.

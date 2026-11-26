@@ -1,9 +1,8 @@
 # dmem — Data Memory
 
-**File:** `rtl/dmem.v`
-**Owner:** Jagruthi Pulumati (Role 3, Control and Memory)
+One wide port that reads or writes a full vector per cycle.
 
----
+**File:** [`rtl/dmem.v`](../rtl/dmem.v) · **Owner:** Jagruthi Pulumati (Role 3, Control and Memory)
 
 ## What it does
 
@@ -33,3 +32,7 @@ Control signals: `we=0`, `addr=2`
 Result: `rdata = {0x000000AA, 0x000000BB, 0x000000CC, 0x000000DD}`
 
 Lane 0 gets `0xDD`, lane 1 gets `0xCC`, lane 2 gets `0xBB`, lane 3 gets `0xAA`.
+
+## Verification
+
+[`tb/dmem_tb.v`](../tb/dmem_tb.v) runs as part of `make test`. It checks write/read-back, per-lane packing, the last address, and that `we=0` leaves memory unchanged.
