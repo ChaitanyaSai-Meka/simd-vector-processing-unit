@@ -1,4 +1,5 @@
-// Check control words and timing against the ISA with real PC and scalar/data memory ports.
+// control_unit_tb.v - checks control words and timing against the ISA using real pc_imem, sreg_file and dmem.
+// Owner: Jagruthi Pulumati (Role 3, Control and Memory)
 `timescale 1ns/1ps
 
 module control_unit_tb;
@@ -62,6 +63,7 @@ module control_unit_tb;
         .wdata(STORE_DATA), .rdata(load_data)
     );
 
+    // Pack fields into the 32-bit instruction format from docs/isa.md.
     function [31:0] encode;
         input [5:0] opcode;
         input [2:0] field_25_23;
@@ -141,6 +143,7 @@ module control_unit_tb;
     endtask
 
     initial begin
+        // 0-1: SLI setup, 2-19: vector ALU ops in both forms, 20-26: VST, VLD, SADDI/BNE loop, SLI, VMUL (reserved), HALT; 27: spare VST.
         program_mem.imem[0] = encode(6'h21, 3'd3, 3'd0, 3'd0, 1'b0, 16'd10);
         program_mem.imem[1] = encode(6'h21, 3'd5, 3'd0, 3'd0, 1'b0, 16'd12);
         for (op = 0; op < 9; op = op + 1)
@@ -160,6 +163,7 @@ module control_unit_tb;
         data_mem.mem[8] = 64'd0;
         data_mem.mem[10] = 64'd0;
 
+        // Reset during a pending scalar write.
         reset_controller;
         fetch;
         step(ADVANCE, 1, 0, 0);
@@ -194,6 +198,7 @@ module control_unit_tb;
             end
         end
 
+        // Store then load the same lane-group.
         fetch;
         check("VST vector source", 6, vs1_addr);
         check("VST scalar base", 3, rs1_addr);
@@ -215,6 +220,7 @@ module control_unit_tb;
         check("SADDI write address", 5, rd_addr);
         check("SADDI 12 + (-1)", 11, sreg_wdata);
         step(SCALAR_WB, 23, 1, 0);
+        // BNE taken once, then falls through.
         fetch;
         check("BNE backward target", 22, branch_target);
         check("BNE second register", 3, rs2_addr);
@@ -243,6 +249,7 @@ module control_unit_tb;
         repeat (3) step(IDLE, 26, 0, 1);
         check("HALT prevented next store", 0, data_mem.mem[10]);
 
+        // Reset during a pending store.
         reset_controller;
         program_mem.imem[0] = program_mem.imem[27];
         fetch;
